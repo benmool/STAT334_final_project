@@ -1,0 +1,71 @@
+---
+title: "Data_Exploration"
+format: html
+---
+
+#### Introduction
+
+In this project, I am going to explore....
+
+
+We are going to look at two separate datasets in this project. The first is taken from Github's `tidytuesday` list of datasets, which is from Nishaan Amin's Kaggle dataset and analysis linked [here](https://www.kaggle.com/code/nishaanamin/bracketology-predicting-march-madness). The `tidytuesday` task specified two of Nishaan Amin's many datasets, and the link to the Github site can be found [here](https://github.com/rfordatascience/tidytuesday/blob/master/data/2024/2024-03-26/readme.md). These two dataframes contain data on past team results and the predictions the public has for this year's tournament (year 2024).
+
+I am also going to be using a "College Basketball Dataset" from Kaggle by Andrew Sundberg, which contains data from various seasons of Division 1 college basketball. Currently, the csv contains data from the 2023-2024 regular season without any data from the NCAA tournament. The link to the Kaggle dataset online can be found [here](https://www.kaggle.com/datasets/andrewsundberg/college-basketball-dataset?resource=download).
+
+#### Data Exploration
+
+First, let's start exploring some of the data.
+
+```{r}
+#| warning: false
+library(tidytuesdayR)
+tuesdata <- tidytuesdayR::tt_load('2024-03-26')
+team_results <- tuesdata$'team-results'
+public_picks <- tuesdata$'public-picks'
+library(readr)
+cbb24 <- read_csv("cbb24.csv")
+```
+
+```{r}
+
+library(tidyverse)
+win_perc_plot_df <- cbb24 |> mutate(win_perc = W / G * 100) |>
+  arrange(desc(win_perc))
+
+ggplot(data = win_perc_plot_df, aes(x = win_perc)) +
+```
+
+Creating a shiny app:
+
+  Start with radio buttons at top that have choices:
+    1. observe full season data
+    2. observe pulic picks data
+    3. observe team results over past march madness tournaments
+
+  For full regular season df
+    Inputs:
+      - can choose what statistic to look at (selectInput)
+      - can choose from all D1 NCAA teams or just teams that made it to NCAA tournament (radioButton)
+        - this radio button then influences if there is slider output available
+      - can choose how many top teams to look at (sliderInput)
+    Outputs:
+      - correct graph of the chosen statistic with chosen number of teams included
+      
+  For public picks df
+    Inputs:
+      - can choose to look at individual teams or look at groups of teams (radioButton)
+        _ "Would you like to manually select teams?"
+        - this radio button then influences if there is slider output available
+      - can choose what statistic to look at (selectInput)
+      - can choose how many teams to look at (sliderInput)
+      - can choose to rank teams in ascending (worst) or descending (best) order (radioButton)
+    Outputs:
+      - correct graph of the chosen statistic with 
+      
+  For past team results df
+    Inputs:
+      - 
+    
+  
+  
+
