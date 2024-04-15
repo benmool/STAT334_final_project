@@ -26,15 +26,6 @@ library(readr)
 cbb24 <- read_csv("cbb24.csv")
 ```
 
-```{r}
-
-library(tidyverse)
-win_perc_plot_df <- cbb24 |> mutate(win_perc = W / G * 100) |>
-  arrange(desc(win_perc))
-
-ggplot(data = win_perc_plot_df, aes(x = win_perc)) +
-```
-
 Creating a shiny app:
 
   Start with radio buttons at top that have choices:
@@ -66,6 +57,106 @@ Creating a shiny app:
     Inputs:
       - 
     
+```{r}
+library(tidyverse)
+
+# let's add a win percentage variable to cbb24
+cbb24 <- cbb24 |> mutate(win_perc = W / G * 100)
+
+# let's get all of the possible statistics choices we can look at from cbb24 (as a vector)
+rs_stat_choices <- names(cbb24)[c(4:22, 24)]
+
+
+win_perc_plot_df <- cbb24 |> mutate(win_perc = W / G * 100) |>
+  arrange(desc(win_perc))
+
+ggplot(data = win_perc_plot_df, aes(x = win_perc)) + 
   
+```
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  sidebarLayout(
+    sidebarPanel(
+      radioButtons(
+        inputId = "data",
+        label = "Choose a dataset to explore:",
+        choices = c("Full Regular Season Data", "Public Picks Data", "Past Team Results Data")
+      ),
+      
+      
+      # For regular season data
+      conditionalPanel(
+        condition = "input.data == 'Full Regular Season Data'",
+        radioButtons(
+          inputId = "team",
+          label = "All NCAA teams or only NCAA tournament teams:",
+          choices = c("All D1 NCAA Teams", "NCAA Tournament Teams")
+        ),
+        selectizeInput(
+          inputId = "stat",
+          label = "Choose a statistic to look at:",
+          choices = rs_stat_choices,
+          selected = "win_perc",
+          multiple = TRUE
+        ),
+        sliderInput(
+          inputId = "top_teams",
+          label = "How many top teams would you like to look at?",
+          min = 1,
+          max = 50,
+          value = 10
+        ),
+        
+      ),
+      
+      # For public picks data
+      conditionalPanel(
+        condition = "input.data == 'Public Picks Data'",
+        
+      ),
+      
+      # For past team results data
+      conditionalPanel(
+        condition = "input.data == 'Past Team Results Data'",
+      )
+    ),
+    mainPanel(
+        conditionalPanel(
+          condition = "input.data == 'Full Regular Season Data'",
+          dataTableOutput(outputId = "regular_season_table")
+      )
+    )
+        
+  )
+)
+
+
+server <- function(input, output, session) {
+  
+  regular_season_reactive <- reactive({
+    if(input$team == "All D1 NCAA Teams") {
+      cbb24 |>
+        select(TEAM, CONF, input$stat) |>
+        slice(1:input$top_teams)
+    } else {
+      cbb24 |>
+        filter(TEAM %in% public_picks$TEAM) |>
+        select(TEAM, CONF, input$stat) |>
+        slice(1:input$top_teams)
+    }
+  })
+  
+  output$regular_season_table <- renderDataTable({
+    regular_season_reactive()
+  })
+  
+}
+
+shinyApp(ui, server)
+```
+
   
 
