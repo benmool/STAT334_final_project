@@ -10,7 +10,32 @@ In this project, I am going to explore....
 
 We are going to look at two separate datasets in this project. The first is taken from Github's `tidytuesday` list of datasets, which is from Nishaan Amin's Kaggle dataset and analysis linked [here](https://www.kaggle.com/code/nishaanamin/bracketology-predicting-march-madness). The `tidytuesday` task specified two of Nishaan Amin's many datasets, and the link to the Github site can be found [here](https://github.com/rfordatascience/tidytuesday/blob/master/data/2024/2024-03-26/readme.md). These two dataframes contain data on past team results and the predictions the public has for this year's tournament (year 2024).
 
-I am also going to be using a "College Basketball Dataset" from Kaggle by Andrew Sundberg, which contains data from various seasons of Division 1 college basketball. Currently, the csv contains data from the 2023-2024 regular season without any data from the NCAA tournament. The link to the Kaggle dataset online can be found [here](https://www.kaggle.com/datasets/andrewsundberg/college-basketball-dataset?resource=download).
+I am also going to be using a "College Basketball Dataset" from Kaggle by Andrew Sundberg, which contains data from various seasons of Division 1 college basketball. Currently, the csv contains data from the 2023-2024 regular season without any data from the NCAA tournament. The link to the Kaggle dataset online can be found [here](https://www.kaggle.com/datasets/andrewsundberg/college-basketball-dataset?resource=download). Variables from this dataset include:
+
+  * `RK`: The ranking of the team at the end of the regular season according to barttorvik
+  * `TEAM`: The name of the team
+  * `CONF`: The conference the team is in
+  * `G`: The number of games the team played in the regular season
+  * `W`: The number of wins the team had in the regular season
+  * `ADJOE` Adjusted offensive efficeincy (points scored per 100 possessions vs avg D1 defense)
+  * `ADJDE` Adjusted defensive efficiency (points allowed per 100 possessions vs avg D1 offense)
+  * `BARTHAG` Power rating from barttorvik (chance of beating avg D1 team)
+  * `EFG_O` Effective field goal percentage shot
+  * `EFG_D` Effective field goal percentage allowed
+  * `TOR` Turnover percentage allowed (turnovers per 100 plays)
+  * `TORD` Turnover percentage forced (turnovers per 100 plays)
+  * `ORB` Offensive rebound percentage 
+  * `DRB` Defensive rebound percentage
+  * `FTR` Free throw rate
+  * `FTRD` Free throw rate allowed
+  * `2P_O` Two point percentage shot
+  * `2P_D` Two point percentage allowed
+  * `3P_O` Three point percentage shot
+  * `3P_D` Three point percentage allowed
+  * `ADJ_T` Adjusted tempo (possessions per 40 minutes)
+  * `SEED` The seed the team was given in the 2024 NCAA tournament
+
+We are trying to answer the question of what makes a team successful in the regular season, and how that success translates to the NCAA tournament. We will be looking at various statistics from the regular season data to see if there are any trends that can be seen in the data. We will also be looking at the public picks data to see if there are any trends in the data that can be seen. Finally, we will be looking at past team results in the NCAA tournament to see if there are any trends in the data that can be seen.
 
 #### Data Exploration
 
@@ -64,14 +89,31 @@ library(tidyverse)
 cbb24 <- cbb24 |> mutate(win_perc = W / G * 100)
 
 # let's get all of the possible statistics choices we can look at from cbb24 (as a vector)
-rs_stat_choices <- names(cbb24)[c(4:22, 24)]
+rs_stat_choices <- names(cbb24)[c(4:21, 23:24)]
 
 
-win_perc_plot_df <- cbb24 |> mutate(win_perc = W / G * 100) |>
-  arrange(desc(win_perc))
+# win_perc_plot_df <- cbb24 |> mutate(win_perc = W / G * 100) |>
+#  arrange(desc(win_perc))
 
-ggplot(data = win_perc_plot_df, aes(x = win_perc)) + 
+# ggplot(data = win_perc_plot_df, aes(x = win_perc)) + 
   
+test <- cbb24 |> mutate(SEED = as.double(SEED))
+
+statistics_plot_df <- cbb24 |>
+  mutate(SEED = as.double(SEED)) |> 
+  pivot_longer(cols = c(4:24), names_to = "stat", values_to = "value") |>
+  filter(stat %in% rs_stat_choices) |>
+  arrange(RK)
+
+
+
+all_teams <- unique(cbb24$TEAM) |>
+  fct_expand("All") |> levels()
+
+tourney_teams <- unique(public_picks$TEAM) |>
+  fct_expand("All")
+
+all_teams <- cbb24 |> unique(TEAM) |> fct_expand("All") |> levels()
 ```
 
 ```{r}
@@ -90,11 +132,21 @@ ui <- fluidPage(
       # For regular season data
       conditionalPanel(
         condition = "input.data == 'Full Regular Season Data'",
+        # select if we want to look at all teams or just tournament teams
         radioButtons(
-          inputId = "team",
+          inputId = "tourney_or_no",
           label = "All NCAA teams or only NCAA tournament teams:",
           choices = c("All D1 NCAA Teams", "NCAA Tournament Teams")
         ),
+        # select teams to look at
+        selectizeInput(
+          inputId = "team_name_reg_season",
+          label = "Choose teams to look at:",
+          choices = NULL,
+          multiple = TRUE,
+          selected = "All"
+        ),
+        # select statistics to look at
         selectizeInput(
           inputId = "stat",
           label = "Choose a statistic to look at:",
@@ -102,6 +154,7 @@ ui <- fluidPage(
           selected = "win_perc",
           multiple = TRUE
         ),
+        # select how many top teams to look at
         sliderInput(
           inputId = "top_teams",
           label = "How many top teams would you like to look at?",
@@ -126,7 +179,8 @@ ui <- fluidPage(
     mainPanel(
         conditionalPanel(
           condition = "input.data == 'Full Regular Season Data'",
-          dataTableOutput(outputId = "regular_season_table")
+          dataTableOutput(outputId = "regular_season_table"),
+          plotOutput(outputId = "regular_season_plot")
       )
     )
         
@@ -136,15 +190,28 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
+  # TODO: When "All" is selected in team_name_reg_season nothing shows up, fix this
+  
+  observeEvent(input$tourney_or_no, {
+    if (input$tourney_or_no == "All D1 NCAA Teams") {
+      teams_choices <- unique(cbb24$TEAM) |> fct_expand("All") |> levels()
+    } else {
+      teams_choices <- unique(public_picks$TEAM) |> fct_expand("All") |> levels()
+    }
+    updateSelectizeInput(session, "team_name_reg_season", choices = teams_choices)
+  })
+  
   regular_season_reactive <- reactive({
-    if(input$team == "All D1 NCAA Teams") {
+    if(input$tourney_or_no == "All D1 NCAA Teams") {
       cbb24 |>
         select(TEAM, CONF, input$stat) |>
+        filter(TEAM %in% input$team_name_reg_season) |>
         slice(1:input$top_teams)
     } else {
       cbb24 |>
         filter(TEAM %in% public_picks$TEAM) |>
         select(TEAM, CONF, input$stat) |>
+        filter(TEAM %in% input$team_name_reg_season) |>
         slice(1:input$top_teams)
     }
   })
@@ -152,6 +219,8 @@ server <- function(input, output, session) {
   output$regular_season_table <- renderDataTable({
     regular_season_reactive()
   })
+  
+  
   
 }
 
