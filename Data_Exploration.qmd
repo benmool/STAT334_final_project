@@ -111,7 +111,9 @@ all_teams <- unique(cbb24$TEAM) |>
   fct_expand("All") |> levels()
 
 tourney_teams <- unique(public_picks$TEAM) |>
-  fct_expand("All")
+  fct_expand("All") |> levels()
+
+public_picks_rounds <- names(public_picks)[c(4:9)]
 
 all_teams <- cbb24 |> unique(TEAM) |> fct_expand("All") |> levels()
 ```
@@ -142,9 +144,9 @@ ui <- fluidPage(
         selectizeInput(
           inputId = "team_name_reg_season",
           label = "Choose teams to look at:",
+          selected = "All",
           choices = NULL,
-          multiple = TRUE,
-          selected = "All"
+          multiple = TRUE
         ),
         # select statistics to look at
         selectizeInput(
@@ -168,7 +170,28 @@ ui <- fluidPage(
       # For public picks data
       conditionalPanel(
         condition = "input.data == 'Public Picks Data'",
-        
+        # select if we want to look at individual teams or groups of teams
+        selectizeInput(
+          inputId = "public_picks_teams",
+          label = "Choose teams to look at:",
+          choices = tourney_teams,
+          multiple = TRUE
+        ),
+        checkboxGroupInput(
+          inputId = "public_picks_rounds",
+          label = "Choose rounds to look at:",
+          choices = public_picks_rounds
+        ),
+        selectInput(
+          inputId = "public_picks_ordering",
+          label = "What order would you like to rank the teams in?",
+          choices = c("Ascending", "Descending")
+        ),
+        selectInput(
+          inputId = "public_picks_ordered_by",
+          label = "What round would you like to order the teams by?",
+          choices = public_picks_rounds
+        )
       ),
       
       # For past team results data
@@ -191,6 +214,8 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   # TODO: When "All" is selected in team_name_reg_season nothing shows up, fix this
+  # Note: Tried fixing, and got it wokring for "All" selection, but now cannot select more 
+  # than 1 team in selectize input, if 2 teams selected that aren't "All" get an error
   
   observeEvent(input$tourney_or_no, {
     if (input$tourney_or_no == "All D1 NCAA Teams") {
@@ -202,6 +227,47 @@ server <- function(input, output, session) {
   })
   
   regular_season_reactive <- reactive({
+    if(input$tourney_or_no == "All D1 NCAA Teams") {
+      if(input$team_name_reg_season == "All") {
+        cbb24 |>
+          select(TEAM, CONF, input$stat) |>
+          slice(1:input$top_teams)
+      } else {
+        cbb24 |>
+          select(TEAM, CONF, input$stat) |>
+          filter(TEAM %in% input$team_name_reg_season) |>
+          slice(1:input$top_teams)
+      }
+    } else {
+      if(input$team_name_reg_season == "All") {
+        cbb24 |>
+          filter(TEAM %in% public_picks$TEAM) |>
+          select(TEAM, CONF, input$stat) |>
+          slice(1:input$top_teams)
+      } else {
+        cbb24 |>
+          filter(TEAM %in% public_picks$TEAM) |>
+          select(TEAM, CONF, input$stat) |>
+          filter(TEAM %in% input$team_name_reg_season) |>
+          slice(1:input$top_teams)
+      }
+    }
+  })
+  
+  output$regular_season_table <- renderDataTable({
+    regular_season_reactive()
+  })
+  
+  
+  
+}
+
+shinyApp(ui, server)
+```
+
+
+```{r}
+regular_season_reactive <- reactive({
     if(input$tourney_or_no == "All D1 NCAA Teams") {
       cbb24 |>
         select(TEAM, CONF, input$stat) |>
@@ -215,16 +281,6 @@ server <- function(input, output, session) {
         slice(1:input$top_teams)
     }
   })
-  
-  output$regular_season_table <- renderDataTable({
-    regular_season_reactive()
-  })
-  
-  
-  
-}
-
-shinyApp(ui, server)
 ```
 
   
