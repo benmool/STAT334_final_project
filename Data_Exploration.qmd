@@ -107,15 +107,13 @@ statistics_plot_df <- cbb24 |>
 
 
 
-all_teams <- unique(cbb24$TEAM) |>
-  fct_expand("All") |> levels()
+all_teams <- unique(cbb24$TEAM) |> levels()
 
-tourney_teams <- unique(public_picks$TEAM) |>
-  fct_expand("All") |> levels()
+tourney_teams <- unique(public_picks$TEAM) |> levels()
 
 public_picks_rounds <- names(public_picks)[c(4:9)]
 
-all_teams <- cbb24 |> unique(TEAM) |> fct_expand("All") |> levels()
+all_teams <- unique(cbb24$TEAM) |> levels()
 ```
 
 ```{r}
@@ -130,7 +128,6 @@ ui <- fluidPage(
         choices = c("Full Regular Season Data", "Public Picks Data", "Past Team Results Data")
       ),
       
-      
       # For regular season data
       conditionalPanel(
         condition = "input.data == 'Full Regular Season Data'",
@@ -140,31 +137,62 @@ ui <- fluidPage(
           label = "All NCAA teams or only NCAA tournament teams:",
           choices = c("All D1 NCAA Teams", "NCAA Tournament Teams")
         ),
-        # select teams to look at
-        selectizeInput(
-          inputId = "team_name_reg_season",
-          label = "Choose teams to look at:",
-          selected = "All",
-          choices = NULL,
-          multiple = TRUE
+        radioButtons(
+          inputId = "manual_select",
+          label = "Would you like to manually select teams?",
+          choices = c("Yes", "No")
         ),
-        # select statistics to look at
-        selectizeInput(
-          inputId = "stat",
-          label = "Choose a statistic to look at:",
-          choices = rs_stat_choices,
-          selected = "win_perc",
-          multiple = TRUE
+        # if looking at all teams
+        conditionalPanel(
+          condition = "input.manual_select == `No`",
+          # select statistics to look at
+          selectizeInput(
+            inputId = "regular_season_stat",
+            label = "Choose statistic(s) to look at:",
+            choices = rs_stat_choices,
+            selected = "win_perc",
+            multiple = TRUE
+          ),
+          # select statistic to order by
+          selectInput(
+            inputId = "regular_season_ordering",
+            label = "Order teams by:",
+            choices = NULL
+          ),
         ),
-        # select how many top teams to look at
-        sliderInput(
-          inputId = "top_teams",
-          label = "How many top teams would you like to look at?",
-          min = 1,
-          max = 50,
-          value = 10
-        ),
-        
+        # if looking at tournament teams
+        conditionalPanel(
+          condition = "input.manual_select == `Yes`",
+          # select teams to look at
+          selectizeInput(
+            inputId = "team_name_reg_season",
+            label = "Choose teams to look at:",
+            choices = NULL,
+            multiple = TRUE
+          ),
+          # select statistics to look at
+          selectizeInput(
+            inputId = "regular_season_stat",
+            label = "Choose statistic(s) to look at:",
+            choices = rs_stat_choices,
+            selected = "win_perc",
+            multiple = TRUE
+          ),
+          # select statistic to order by
+          selectInput(
+            inputId = "regular_season_ordering",
+            label = "Order teams by:",
+            choices = NULL
+          ),
+          # select how many top teams to look at
+          sliderInput(
+            inputId = "top_teams",
+            label = "How many top teams would you like to look at?",
+            min = 1,
+            max = 50,
+            value = 10
+          )
+        )
       ),
       
       # For public picks data
@@ -183,14 +211,14 @@ ui <- fluidPage(
           choices = public_picks_rounds
         ),
         selectInput(
+          inputId = "public_picks_ordered_by",
+          label = "What round would you like to order the teams by?",
+          choices = NULL
+        ),
+        selectInput(
           inputId = "public_picks_ordering",
           label = "What order would you like to rank the teams in?",
           choices = c("Ascending", "Descending")
-        ),
-        selectInput(
-          inputId = "public_picks_ordered_by",
-          label = "What round would you like to order the teams by?",
-          choices = public_picks_rounds
         )
       ),
       
@@ -200,13 +228,22 @@ ui <- fluidPage(
       )
     ),
     mainPanel(
-        conditionalPanel(
-          condition = "input.data == 'Full Regular Season Data'",
-          dataTableOutput(outputId = "regular_season_table"),
-          plotOutput(outputId = "regular_season_plot")
+      conditionalPanel(
+        condition = "input.data == 'Full Regular Season Data'",
+        dataTableOutput(outputId = "regular_season_table"),
+        plotOutput(outputId = "regular_season_plot")
+      ),
+      conditionalPanel(
+        condition = "input.data == 'Public Picks Data'",
+        dataTableOutput(outputId = "public_picks_table"),
+        plotOutput(outputId = "public_picks_plot")
+      ),
+      conditionalPanel(
+        condition = "input.data == 'Past Team Results Data'",
+        dataTableOutput(outputId = "past_team_results_table"),
+        plotOutput(outputId = "past_team_results_plot")
       )
     )
-        
   )
 )
 
@@ -219,39 +256,47 @@ server <- function(input, output, session) {
   
   observeEvent(input$tourney_or_no, {
     if (input$tourney_or_no == "All D1 NCAA Teams") {
-      teams_choices <- unique(cbb24$TEAM) |> fct_expand("All") |> levels()
+      teams_choices <- all_teams
     } else {
-      teams_choices <- unique(public_picks$TEAM) |> fct_expand("All") |> levels()
+      teams_choices <- tourney_teams
     }
     updateSelectizeInput(session, "team_name_reg_season", choices = teams_choices)
   })
   
+  observeEvent(input$regular_season_stat, {
+    updateSelectInput(session, "regular_season_ordering", choices = input$regular_season_stat)
+  })
+  
   regular_season_reactive <- reactive({
     if(input$tourney_or_no == "All D1 NCAA Teams") {
-      if(input$team_name_reg_season == "All") {
+      if(input$manual_select == "No") {
         cbb24 |>
-          select(TEAM, CONF, input$stat) |>
+          select(TEAM, CONF, input$regular_season_stat) |>
           slice(1:input$top_teams)
       } else {
         cbb24 |>
-          select(TEAM, CONF, input$stat) |>
+          select(TEAM, CONF, input$regular_season_stat) |>
           filter(TEAM %in% input$team_name_reg_season) |>
           slice(1:input$top_teams)
       }
     } else {
-      if(input$team_name_reg_season == "All") {
+      if(input$manual_select == "No") {
         cbb24 |>
           filter(TEAM %in% public_picks$TEAM) |>
-          select(TEAM, CONF, input$stat) |>
+          select(TEAM, CONF, input$regular_season_stat) |>
           slice(1:input$top_teams)
       } else {
         cbb24 |>
           filter(TEAM %in% public_picks$TEAM) |>
-          select(TEAM, CONF, input$stat) |>
+          select(TEAM, CONF, input$regular_season_stat) |>
           filter(TEAM %in% input$team_name_reg_season) |>
           slice(1:input$top_teams)
       }
     }
+  })
+  
+  observeEvent(input$public_picks_rounds, {
+    updateSelectInput(session, "public_picks_ordered_by", choices = input$public_picks_rounds)
   })
   
   output$regular_season_table <- renderDataTable({
@@ -270,15 +315,43 @@ shinyApp(ui, server)
 regular_season_reactive <- reactive({
     if(input$tourney_or_no == "All D1 NCAA Teams") {
       cbb24 |>
-        select(TEAM, CONF, input$stat) |>
+        select(TEAM, CONF, input$regular_season_stat) |>
         filter(TEAM %in% input$team_name_reg_season) |>
         slice(1:input$top_teams)
     } else {
       cbb24 |>
         filter(TEAM %in% public_picks$TEAM) |>
-        select(TEAM, CONF, input$stat) |>
+        select(TEAM, CONF, input$regular_season_stat) |>
         filter(TEAM %in% input$team_name_reg_season) |>
         slice(1:input$top_teams)
+    }
+  })
+
+regular_season_reactive <- reactive({
+    if(input$tourney_or_no == "All D1 NCAA Teams") {
+      if(input$team_name_reg_season == "All") {
+        cbb24 |>
+          select(TEAM, CONF, input$regular_season_stat) |>
+          slice(1:input$top_teams)
+      } else {
+        cbb24 |>
+          select(TEAM, CONF, input$regular_season_stat) |>
+          filter(TEAM %in% input$team_name_reg_season) |>
+          slice(1:input$top_teams)
+      }
+    } else {
+      if(input$team_name_reg_season == "All") {
+        cbb24 |>
+          filter(TEAM %in% public_picks$TEAM) |>
+          select(TEAM, CONF, input$regular_season_stat) |>
+          slice(1:input$top_teams)
+      } else {
+        cbb24 |>
+          filter(TEAM %in% public_picks$TEAM) |>
+          select(TEAM, CONF, input$regular_season_stat) |>
+          filter(TEAM %in% input$team_name_reg_season) |>
+          slice(1:input$top_teams)
+      }
     }
   })
 ```
