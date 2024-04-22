@@ -1,110 +1,17 @@
----
-title: "Data_Exploration"
-format: html
----
-
-#### Introduction
-
-In this project, I am going to explore....
-
-
-We are going to look at two separate datasets in this project. The first is taken from Github's `tidytuesday` list of datasets, which is from Nishaan Amin's Kaggle dataset and analysis linked [here](https://www.kaggle.com/code/nishaanamin/bracketology-predicting-march-madness). The `tidytuesday` task specified two of Nishaan Amin's many datasets, and the link to the Github site can be found [here](https://github.com/rfordatascience/tidytuesday/blob/master/data/2024/2024-03-26/readme.md). These two dataframes contain data on past team results and the predictions the public has for this year's tournament (year 2024).
-
-I am also going to be using a "College Basketball Dataset" from Kaggle by Andrew Sundberg, which contains data from various seasons of Division 1 college basketball. Currently, the csv contains data from the 2023-2024 regular season without any data from the NCAA tournament. The link to the Kaggle dataset online can be found [here](https://www.kaggle.com/datasets/andrewsundberg/college-basketball-dataset?resource=download). Variables from this dataset include:
-
-  * `RK`: The ranking of the team at the end of the regular season according to barttorvik
-  * `TEAM`: The name of the team
-  * `CONF`: The conference the team is in
-  * `G`: The number of games the team played in the regular season
-  * `W`: The number of wins the team had in the regular season
-  * `ADJOE` Adjusted offensive efficeincy (points scored per 100 possessions vs avg D1 defense)
-  * `ADJDE` Adjusted defensive efficiency (points allowed per 100 possessions vs avg D1 offense)
-  * `BARTHAG` Power rating from barttorvik (chance of beating avg D1 team)
-  * `EFG_O` Effective field goal percentage shot
-  * `EFG_D` Effective field goal percentage allowed
-  * `TOR` Turnover percentage allowed (turnovers per 100 plays)
-  * `TORD` Turnover percentage forced (turnovers per 100 plays)
-  * `ORB` Offensive rebound percentage 
-  * `DRB` Defensive rebound percentage
-  * `FTR` Free throw rate
-  * `FTRD` Free throw rate allowed
-  * `2P_O` Two point percentage shot
-  * `2P_D` Two point percentage allowed
-  * `3P_O` Three point percentage shot
-  * `3P_D` Three point percentage allowed
-  * `ADJ_T` Adjusted tempo (possessions per 40 minutes)
-  * `SEED` The seed the team was given in the 2024 NCAA tournament
-
-We are trying to answer the question of what makes a team successful in the regular season, and how that success translates to the NCAA tournament. We will be looking at various statistics from the regular season data to see if there are any trends that can be seen in the data. We will also be looking at the public picks data to see if there are any trends in the data that can be seen. Finally, we will be looking at past team results in the NCAA tournament to see if there are any trends in the data that can be seen.
-
-#### Data Exploration
-
-First, let's start exploring some of the data.
-
-```{r}
-#| warning: false
 library(tidytuesdayR)
 tuesdata <- tidytuesdayR::tt_load('2024-03-26')
 team_results <- tuesdata$'team-results'
 public_picks <- tuesdata$'public-picks'
 library(readr)
 cbb24 <- read_csv("cbb24.csv")
-```
-
-Creating a shiny app:
-
-  Start with radio buttons at top that have choices:
-    1. observe full season data
-    2. observe pulic picks data
-    3. observe team results over past march madness tournaments
-
-  For full regular season df
-    Inputs:
-      - can choose what statistic to look at (selectInput)
-      - can choose from all D1 NCAA teams or just teams that made it to NCAA tournament (radioButton)
-        - this radio button then influences if there is slider output available
-      - can choose how many top teams to look at (sliderInput)
-    Outputs:
-      - correct graph of the chosen statistic with chosen number of teams included
-      
-  For public picks df
-    Inputs:
-      - can choose to look at individual teams or look at groups of teams (radioButton)
-        _ "Would you like to manually select teams?"
-        - this radio button then influences if there is slider output available
-      - can choose what statistic to look at (selectInput)
-      - can choose how many teams to look at (sliderInput)
-      - can choose to rank teams in ascending (worst) or descending (best) order (radioButton)
-    Outputs:
-      - correct graph of the chosen statistic with 
-      
-  For past team results df
-    Inputs:
-      - 
-    
-```{r}
 library(tidyverse)
+library(shiny)
 
 # let's add a win percentage variable to cbb24
 cbb24 <- cbb24 |> mutate(win_perc = W / G * 100)
 
 # let's get all of the possible statistics choices we can look at from cbb24 (as a vector)
 rs_stat_choices <- names(cbb24)[c(4:21, 23:24)]
-
-
-# win_perc_plot_df <- cbb24 |> mutate(win_perc = W / G * 100) |>
-#  arrange(desc(win_perc))
-
-# ggplot(data = win_perc_plot_df, aes(x = win_perc)) + 
-  
-test <- cbb24 |> mutate(SEED = as.double(SEED))
-
-statistics_plot_df <- cbb24 |>
-  mutate(SEED = as.double(SEED)) |> 
-  pivot_longer(cols = c(4:24), names_to = "stat", values_to = "value") |>
-  filter(stat %in% rs_stat_choices) |>
-  arrange(RK)
-
 
 
 all_teams <- cbb24 |> mutate(TEAM = as.factor(TEAM)) |>
@@ -114,10 +21,7 @@ tourney_teams <- public_picks |> mutate(TEAM = as.factor(TEAM)) |>
   pull(TEAM) |> levels()
 
 public_picks_rounds <- names(public_picks)[c(4:9)]
-```
 
-```{r}
-library(shiny)
 
 ui <- fluidPage(
   sidebarLayout(
@@ -283,29 +187,29 @@ server <- function(input, output, session) {
     if(input$tourney_or_no == "All D1 NCAA Teams") {
       if(input$manual_select == "No") {
         output_table <- cbb24 |> 
-          select(TEAM, CONF, input$nms_regular_season_stat) |>
-          mutate(TEAM = fct.reorder(TEAM, input$nms_regular_season_stat)) |>
+          select(TEAM, CONF, .data[[input$nms_regular_season_stat]]) |>
+          arrange(desc(.data[[input$nms_regular_season_stat]])) |>
           slice(1:input$nms_top_teams)
       } else {
         output_table <- cbb24 |>
-          select(TEAM, CONF, input$ms_regular_season_stat) |>
+          select(TEAM, CONF, .data[[input$ms_regular_season_stat]]) |>
           filter(TEAM %in% input$ms_team_name_reg_season) |>
-          arrange(desc(input$ms_regular_season_ordering)) |>
+          arrange(desc(.data[[input$ms_regular_season_ordering]])) |>
           slice(1:input$ms_top_teams)
       }
     } else {
       if(input$manual_select == "No") {
         output_table <- cbb24 |>
           filter(TEAM %in% public_picks$TEAM) |>
-          select(TEAM, CONF, input$nms_regular_season_stat) |>
-          arrange(desc(input$nms_regular_season_ordering)) |>
+          select(TEAM, CONF, .data[[input$nms_regular_season_stat]]) |>
+          arrange(desc(.data[[input$nms_regular_season_ordering]])) |>
           slice(1:input$nms_top_teams)
       } else {
         output_table <- cbb24 |>
           filter(TEAM %in% public_picks$TEAM) |>
-          select(TEAM, CONF, input$ms_regular_season_stat) |>
+          select(TEAM, CONF, .data[[input$ms_regular_season_stat]]) |>
           filter(TEAM %in% input$ms_team_name_reg_season) |>
-          arrange(desc(input$ms_regular_season_ordering)) |>
+          arrange(desc(.data[[input$ms_regular_season_ordering]])) |>
           slice(1:input$ms_top_teams)
       }
     }
@@ -325,53 +229,4 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
-```
-
-
-```{r}
-regular_season_reactive <- reactive({
-    if(input$tourney_or_no == "All D1 NCAA Teams") {
-      cbb24 |>
-        select(TEAM, CONF, input$regular_season_stat) |>
-        filter(TEAM %in% input$team_name_reg_season) |>
-        slice(1:input$top_teams)
-    } else {
-      cbb24 |>
-        filter(TEAM %in% public_picks$TEAM) |>
-        select(TEAM, CONF, input$regular_season_stat) |>
-        filter(TEAM %in% input$team_name_reg_season) |>
-        slice(1:input$top_teams)
-    }
-  })
-
-regular_season_reactive <- reactive({
-    if(input$tourney_or_no == "All D1 NCAA Teams") {
-      if(input$team_name_reg_season == "All") {
-        cbb24 |>
-          select(TEAM, CONF, input$regular_season_stat) |>
-          slice(1:input$top_teams)
-      } else {
-        cbb24 |>
-          select(TEAM, CONF, input$regular_season_stat) |>
-          filter(TEAM %in% input$team_name_reg_season) |>
-          slice(1:input$top_teams)
-      }
-    } else {
-      if(input$team_name_reg_season == "All") {
-        cbb24 |>
-          filter(TEAM %in% public_picks$TEAM) |>
-          select(TEAM, CONF, input$regular_season_stat) |>
-          slice(1:input$top_teams)
-      } else {
-        cbb24 |>
-          filter(TEAM %in% public_picks$TEAM) |>
-          select(TEAM, CONF, input$regular_season_stat) |>
-          filter(TEAM %in% input$team_name_reg_season) |>
-          slice(1:input$top_teams)
-      }
-    }
-  })
-```
-
-  
 
