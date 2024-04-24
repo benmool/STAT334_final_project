@@ -1,0 +1,9 @@
+---
+title: "Final_Project_Report"
+author: "Ben Moolman"
+date: "2024-04-24"
+output: html_document
+---
+
+In this project, we aim to explore NCAA basketball teams, from the 2023-2024 season. We are going to be using data that has various statistics from the 2023-2024 NCAA basketball regular season. We will also use data that has predictions made by the public as to how each team will do in the 2023-2024 NCAA tournament. Our third set of data contains data on the performance of teams in previous NCAA tournaments. Our goal is to combine these three data sets into a shiny app and offer tables and visuals to explore how teams have performed this last season and in previous tournaments, and how the public thought they would perform in the 2023-2024 NCAA tournament.
+

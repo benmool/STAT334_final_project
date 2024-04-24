@@ -13,6 +13,9 @@ cbb24 <- cbb24 |> mutate(win_perc = W / G * 100)
 # let's get all of the possible statistics choices we can look at from cbb24 (as a vector)
 rs_stat_choices <- names(cbb24)[c(4:21, 23:24)]
 
+pr_stats_choices <- names(team_results)[c(2:10)]
+
+pr_rounds <- names(team_results)[c(11:16)]
 
 all_teams <- cbb24 |> mutate(TEAM = as.factor(TEAM)) |>
   pull(TEAM) |> levels()
@@ -37,18 +40,18 @@ ui <- fluidPage(
         condition = "input.data == 'Full Regular Season Data'",
         # select if we want to look at all teams or just tournament teams
         radioButtons(
-          inputId = "tourney_or_no",
+          inputId = "rs_tourney_or_no",
           label = "All NCAA teams or only NCAA tournament teams:",
           choices = c("All D1 NCAA Teams", "NCAA Tournament Teams")
         ),
         radioButtons(
-          inputId = "manual_select",
+          inputId = "rs_manual_select",
           label = "Would you like to manually select teams?",
           choices = c("Yes", "No")
         ),
         # if looking at all teams
         conditionalPanel(
-          condition = "input.manual_select == `No`",
+          condition = "input.rs_manual_select == `No`",
           # select statistics to look at
           selectizeInput(
             inputId = "nms_regular_season_stat",
@@ -69,11 +72,12 @@ ui <- fluidPage(
             min = 1,
             max = 50,
             value = 10
-          )
+          ),
+          actionButton(inputId = "rs_nms_run_app", label = "Update Stats")
         ),
         # if looking at tournament teams
         conditionalPanel(
-          condition = "input.manual_select == `Yes`",
+          condition = "input.rs_manual_select == `Yes`",
           # select teams to look at
           selectizeInput(
             inputId = "ms_team_name_reg_season",
@@ -136,6 +140,48 @@ ui <- fluidPage(
       # For past team results data
       conditionalPanel(
         condition = "input.data == 'Past Team Results Data'",
+        # select if we want to look at all teams or just tournament teams
+        radioButtons(
+          inputId = "pr_tourney_or_no",
+          label = "All NCAA teams or only NCAA 2024 tournament teams:",
+          choices = c("All D1 NCAA Teams", "NCAA 2024 Tournament Teams")
+        ),
+        radioButtons(
+          inputId = "pr_rounds_or_stats",
+          label = "Would you like to look at rounds or statistics?",
+          choices = c("Rounds", "Statistics")
+        ),
+        # if looking at rounds
+        conditionalPanel(
+          condition = "input.pr_rounds_or_stats == 'Rounds'",
+          checkboxGroupInput(
+            inputId = "pr_rounds",
+            label = "Choose round(s) to look at:",
+            choices = pr_rounds
+          )
+        ),
+        # if looking at statistics
+        conditionalPanel(
+          condition = "input.pr_rounds_or_stats == 'Statistics'",
+          selectizeInput(
+            inputId = "pr_stats",
+            label = "Choose statistic(s) to look at:",
+            choices = pr_stats_choices,
+            multiple = TRUE
+          ),
+          selectInput(
+            inputId = "pr_stats_ordering",
+            label = "Order teams by:",
+            choices = NULL
+          ),
+          sliderInput(
+            inputId = "pr_stats_top_teams",
+            label = "How many top teams would you like to look at?",
+            min = 1,
+            max = 50,
+            value = 10
+          )
+        )
       )
     ),
     mainPanel(
@@ -161,18 +207,14 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
-  observeEvent(input$manual_select, {
-    if (input$manual_select == "No") {
-      updateSelectizeInput(session, "nms_regular_season_stat", choices = rs_stat_choices)
-    } else if (input$manual_select == "Yes") {
-      if (input$tourney_or_no == "All D1 NCAA Teams") {
-        teams_choices <- all_teams
-      } else if (input$tourney_or_no == "NCAA Tournament Teams") {
-        teams_choices <- tourney_teams
-      }
-      updateSelectizeInput(session, "ms_team_name_reg_season", choices = teams_choices)
-      updateSelectizeInput(session, "ms_regular_season_stat", choices = rs_stat_choices)
+  
+  observeEvent(input$rs_tourney_or_no, {
+    if (input$rs_tourney_or_no == "All D1 NCAA Teams") {
+      teams_choices <- all_teams
+    } else if (input$rs_tourney_or_no == "NCAA Tournament Teams") {
+      teams_choices <- tourney_teams
     }
+    updateSelectizeInput(session, "ms_team_name_reg_season", choices = teams_choices)
   })
   
   observeEvent(input$ms_regular_season_stat, {
@@ -183,9 +225,23 @@ server <- function(input, output, session) {
     updateSelectInput(session, "nms_regular_season_ordering", choices = input$nms_regular_season_stat)
   })
   
+  
+  
+  
+  rs_nms_react <- eventReactive(input$rs_nms_run_app, {
+    if(input$rs_tourney_or_no == "All D1 NCAA Teams") {
+      output_table <- cbb24 |> 
+        select(TEAM, CONF, any_of(input$nms_regular_season_stat)) |>
+        arrange(desc(.data[[input$nms_regular_season_ordering]])) |>
+        slice(1:input$nms_top_teams)
+    }
+  })
+  
+
+  
   regular_season_reactive <- reactive({
-    if(input$tourney_or_no == "All D1 NCAA Teams") {
-      if(input$manual_select == "No") {
+    if(input$rs_tourney_or_no == "All D1 NCAA Teams") {
+      if(input$rs_manual_select == "No") {
         output_table <- cbb24 |> 
           select(TEAM, CONF, .data[[input$nms_regular_season_stat]]) |>
           arrange(desc(.data[[input$nms_regular_season_stat]])) |>
@@ -198,7 +254,7 @@ server <- function(input, output, session) {
           slice(1:input$ms_top_teams)
       }
     } else {
-      if(input$manual_select == "No") {
+      if(input$rs_manual_select == "No") {
         output_table <- cbb24 |>
           filter(TEAM %in% public_picks$TEAM) |>
           select(TEAM, CONF, .data[[input$nms_regular_season_stat]]) |>
@@ -221,7 +277,7 @@ server <- function(input, output, session) {
   })
   
   output$regular_season_table <- renderDataTable({
-    regular_season_reactive()
+    rs_nms_react()
   })
   
   
