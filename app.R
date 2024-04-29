@@ -25,6 +25,11 @@ tourney_teams <- public_picks |> mutate(TEAM = as.factor(TEAM)) |>
 
 public_picks_rounds <- names(public_picks)[c(4:9)]
 
+# create a tibbble with a TEAM variable that has 5 teams from in the NCAA tournament and 5 not in it
+testy <- tibble(TEAM = c("Gonzaga", "Baylor", "Houston", "UCLA", "Duke", "Wyoming", "Rando", "Valparaiso", "UT Rio Grande Valley", "Tarleton St."),
+                NCAA_TOURNAMENT = c("Yes", "Yes", "Yes", "Yes", "Yes", "No", "No", "No", "No", "No"))
+
+testy |> filter(TEAM %in% tourney_teams)
 
 ui <- fluidPage(
   sidebarLayout(
@@ -106,7 +111,8 @@ ui <- fluidPage(
             min = 1,
             max = 50,
             value = 10
-          )
+          ),
+          actionButton(inputId = "rs_ms_run_app", label = "Update Stats")
         )
       ),
       
@@ -121,7 +127,7 @@ ui <- fluidPage(
           multiple = TRUE
         ),
         checkboxGroupInput(
-          inputId = "public_picks_rounds",
+          inputId = "public_picks_rds",
           label = "Choose rounds to look at:",
           choices = public_picks_rounds
         ),
@@ -134,7 +140,8 @@ ui <- fluidPage(
           inputId = "public_picks_ordering",
           label = "What order would you like to rank the teams in?",
           choices = c("Ascending", "Descending")
-        )
+        ),
+        actionButton(inputId = "pp_run_app", label = "Update Stats")
       ),
       
       # For past team results data
@@ -158,7 +165,8 @@ ui <- fluidPage(
             inputId = "pr_rounds",
             label = "Choose round(s) to look at:",
             choices = pr_rounds
-          )
+          ),
+          actionButton(inputId = "ptr_rounds_run_app", label = "Update Stats")
         ),
         # if looking at statistics
         conditionalPanel(
@@ -180,7 +188,8 @@ ui <- fluidPage(
             min = 1,
             max = 50,
             value = 10
-          )
+          ),
+          actionButton(inputId = "ptr_stats_run_app", label = "Update Stats")
         )
       )
     ),
@@ -207,7 +216,7 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
-  
+  # Regular season data
   observeEvent(input$rs_tourney_or_no, {
     if (input$rs_tourney_or_no == "All D1 NCAA Teams") {
       teams_choices <- all_teams
@@ -225,8 +234,21 @@ server <- function(input, output, session) {
     updateSelectInput(session, "nms_regular_season_ordering", choices = input$nms_regular_season_stat)
   })
   
-  
-  
+  rs_ms_react <- eventReactive(input$rs_ms_run_app, {
+    if(input$rs_tourney_or_no == "All D1 NCAA Teams") {
+      output_table <- cbb24 |> 
+        select(TEAM, CONF, any_of(input$ms_regular_season_stat)) |>
+        filter(TEAM %in% input$ms_team_name_reg_season) |>
+        arrange(desc(.data[[input$ms_regular_season_ordering]])) |>
+        slice(1:input$ms_top_teams)
+    } else if (input$rs_tourney_or_no == "NCAA Tournament Teams") {
+      output_table <- cbb24 |>
+        select(TEAM, CONF, any_of(input$ms_regular_season_stat)) |>
+        filter(TEAM %in% input$ms_team_name_reg_season) |>
+        arrange(desc(.data[[input$ms_regular_season_ordering]])) |>
+        slice(1:input$ms_top_teams)
+    }
+  })
   
   rs_nms_react <- eventReactive(input$rs_nms_run_app, {
     if(input$rs_tourney_or_no == "All D1 NCAA Teams") {
@@ -234,53 +256,51 @@ server <- function(input, output, session) {
         select(TEAM, CONF, any_of(input$nms_regular_season_stat)) |>
         arrange(desc(.data[[input$nms_regular_season_ordering]])) |>
         slice(1:input$nms_top_teams)
-    }
-  })
-  
-
-  
-  regular_season_reactive <- reactive({
-    if(input$rs_tourney_or_no == "All D1 NCAA Teams") {
-      if(input$rs_manual_select == "No") {
-        output_table <- cbb24 |> 
-          select(TEAM, CONF, .data[[input$nms_regular_season_stat]]) |>
-          arrange(desc(.data[[input$nms_regular_season_stat]])) |>
-          slice(1:input$nms_top_teams)
-      } else {
-        output_table <- cbb24 |>
-          select(TEAM, CONF, .data[[input$ms_regular_season_stat]]) |>
-          filter(TEAM %in% input$ms_team_name_reg_season) |>
-          arrange(desc(.data[[input$ms_regular_season_ordering]])) |>
-          slice(1:input$ms_top_teams)
-      }
     } else {
-      if(input$rs_manual_select == "No") {
-        output_table <- cbb24 |>
-          filter(TEAM %in% public_picks$TEAM) |>
-          select(TEAM, CONF, .data[[input$nms_regular_season_stat]]) |>
-          arrange(desc(.data[[input$nms_regular_season_ordering]])) |>
-          slice(1:input$nms_top_teams)
-      } else {
-        output_table <- cbb24 |>
-          filter(TEAM %in% public_picks$TEAM) |>
-          select(TEAM, CONF, .data[[input$ms_regular_season_stat]]) |>
-          filter(TEAM %in% input$ms_team_name_reg_season) |>
-          arrange(desc(.data[[input$ms_regular_season_ordering]])) |>
-          slice(1:input$ms_top_teams)
-      }
+      output_table <- cbb24 |>
+        select(TEAM, CONF, any_of(input$nms_regular_season_stat)) |>
+        filter(TEAM %in% tourney_teams) |>
+        arrange(desc(.data[[input$nms_regular_season_ordering]])) |>
+        slice(1:input$nms_top_teams)
     }
-    output_table
-  })
-  
-  observeEvent(input$public_picks_rounds, {
-    updateSelectInput(session, "public_picks_ordered_by", choices = input$public_picks_rounds)
   })
   
   output$regular_season_table <- renderDataTable({
-    rs_nms_react()
+    if (input$rs_manual_select == "No") {
+      rs_nms_react()
+    } else {
+      rs_ms_react()
+    }
+  })
+  
+  # public picks data
+  observeEvent(input$public_picks_rds, {
+    updateSelectInput(session, "public_picks_ordered_by", choices = input$public_picks_rds)
+  })
+  
+  public_picks_react <- eventReactive(input$pp_run_app, {
+    if (input$public_picks_ordered_by == "Ascending") {
+      output_table <- public_picks |>
+        select(TEAM, any_of(input$public_picks_rds)) |>
+        filter(TEAM %in% input$public_picks_teams) |> 
+        arrange(.data[[input$public_picks_ordered_by]])
+    } else if (input$public_picks_ordered_by == "Descending") {
+      output_table <- public_picks |>
+        select(TEAM, any_of(input$public_picks_rds)) |>
+        filter(TEAM %in% input$public_picks_teams) |> 
+        arrange(desc(.data[[input$public_picks_ordered_by]]))
+    }
+  })
+  
+  output$public_picks_table <- renderDataTable({
+    public_picks_react()
   })
   
   
+  # past team results data
+  observeEvent(input$pr_stats, {
+    updateSelectInput(session, "pr_stats_ordering", choices = input$pr_stats)
+  })
   
 }
 

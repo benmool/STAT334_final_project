@@ -1,0 +1,35 @@
+---
+title: "Data Visualization Final Project"
+format: revealjs
+---
+
+
+```{r}
+# Put data prep work above
+#| echo: false
+#| output: false
+#| warning: false
+
+```
+
+
+## Data
+
+Bullets / data table
+
+  * 
+  * 
+
+## Interesting Visualization 1
+
+For side by side plots
+```{r}
+library(gridExtra)
+grid.arrange(plot1, plot2, nrow = 1)
+```
+
+
+## Interesting Visualization 2
+
+
+## 
