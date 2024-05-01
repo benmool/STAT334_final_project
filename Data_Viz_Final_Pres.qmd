@@ -3,33 +3,141 @@ title: "Data Visualization Final Project"
 format: revealjs
 ---
 
-
 ```{r}
 # Put data prep work above
 #| echo: false
 #| output: false
 #| warning: false
+#| message: false
+library(tidytuesdayR)
+tuesdata <- tidytuesdayR::tt_load('2024-03-26')
+team_results <- tuesdata$'team-results'
+public_picks <- tuesdata$'public-picks'
+library(readr)
+cbb24 <- read_csv("cbb24.csv")
+library(tidyverse)
+library(shiny)
+library(kableExtra)
+# let's add a win percentage variable to cbb24
+cbb24 <- cbb24 |> mutate(win_perc = W / G * 100)
 
+# let's get all of the possible statistics choices we can look at from cbb24 (as a vector)
+rs_stat_choices <- names(cbb24)[c(4:21, 23:24)]
+
+pr_stats_choices <- names(team_results)[c(2:10)]
+
+pr_rounds <- names(team_results)[c(11:16)]
+
+all_teams <- cbb24 |> mutate(TEAM = as.factor(TEAM)) |>
+  pull(TEAM) |> levels()
+
+tourney_teams <- public_picks |> mutate(TEAM = as.factor(TEAM)) |>
+  pull(TEAM) |> levels()
+
+public_picks_rounds <- names(public_picks)[c(4:9)]
 ```
 
-
-## Data
-
-Bullets / data table
-
-  * 
-  * 
-
-## Interesting Visualization 1
-
-For side by side plots
 ```{r}
+#| echo: false
+#| output: false
+#| warning: false
+#| eval: false
+# For side by side plots
 library(gridExtra)
 grid.arrange(plot1, plot2, nrow = 1)
 ```
 
 
-## Interesting Visualization 2
+## Data Overview 1
 
+  * The first data set we will be using is the `cbb24` data set. This data set contains various statistics from the 2023-2024 NCAA basketball regular season.
+  
+```{r}
+cbb24_top_seeds <- cbb24 |> 
+  filter(TEAM %in% c("Houston", "Connecticut", "Purdue", "North Carolina"))
 
-## 
+cbb24_top_seeds[1:13] |>
+  kable() |>
+  kable_styling(full_width = FALSE,
+                font_size = 23)
+
+cbb24_top_seeds[14:24] |>
+  kable() |>
+  kable_styling(full_width = FALSE,
+                font_size = 23)
+```
+
+## Data Overview 2
+
+  * The second data set we will be using is the `public_picks` data set. This data set contains predictions made by the public as to how each team will do in the 2023-2024 NCAA tournament.
+  
+```{r}
+public_picks |> filter(TEAM %in% c("Houston", "Connecticut", "Purdue", "North Carolina")) |>
+  kable() |>
+  kable_styling(full_width = FALSE,
+                font_size = 25)
+```
+
+## Visualization 1
+
+```{r}
+## Visualization 1: cbb24 filtered for specific teams and specific stats
+cbb24_top_teams <- cbb24 |> 
+  filter(TEAM %in% c("Houston", "Connecticut", "Purdue", "North Carolina")) |>
+  select(TEAM, win_perc, '2P_O', '2P_D', '3P_O', '3P_D')
+
+cbb24_top_teams_long <- pivot_longer(cbb24_top_teams, 
+                                     cols = -TEAM, 
+                                     names_to = "Variable", 
+                                     values_to = "Value")
+
+ggplot(cbb24_top_teams_long, aes(x = Variable, y = Value, fill = TEAM)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Variable", y = "Value",
+       title = "Performance Comparison of Top College Basketball Teams",
+       subtitle = "Data from 2023-2024 NCAA Basketball Regular Season") +
+  theme_minimal(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_viridis_d()
+```
+
+## Visualization 2
+
+```{r}
+## Visualization 2: public picks filtered for specific teams and specific stats
+
+## First, we need to convert the percentages to numeric
+public_picks[, c("R64", "R32", "S16", "E8", "F4", "FINALS")] <- 
+  lapply(public_picks[, c("R64", "R32", "S16", "E8", "F4", "FINALS")], 
+         function(x) as.numeric(sub("%", "", x)))
+
+rounds_order <- c("R64", "R32", "S16", "E8", "F4", "FINALS")
+
+public_picks_top_teams <- public_picks |> 
+  filter(TEAM %in% c("Houston", "Connecticut", "Purdue", "North Carolina")) |>
+  select(TEAM, R64, R32, S16, E8, F4, FINALS)
+
+public_picks_top_teams <- public_picks |> 
+  filter(TEAM %in% c("Houston", "Connecticut", "Purdue", "North Carolina")) |>
+  select(TEAM, S16, E8, F4, FINALS)
+
+public_picks_top_teams_long <- pivot_longer(public_picks_top_teams, 
+                                     cols = -TEAM, 
+                                     names_to = "Round", 
+                                     values_to = "Percentage")
+
+# Recode the "Round" column as ordered factor
+public_picks_top_teams_long$Round <- factor(public_picks_top_teams_long$Round, levels = rounds_order)
+
+ggplot(public_picks_top_teams_long, aes(x = Round, y = Percentage, fill = TEAM)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Round", y = "Percentage",
+       title = "Public Picks for 2024 NCAA Tournament Teams") +
+  theme_minimal(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_viridis_d()
+```
+
+## Visualization 3
+
+  * Currently working on a visualization that will show stats for all team results from previous NCAA tournaments

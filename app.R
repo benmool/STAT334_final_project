@@ -25,12 +25,6 @@ tourney_teams <- public_picks |> mutate(TEAM = as.factor(TEAM)) |>
 
 public_picks_rounds <- names(public_picks)[c(4:9)]
 
-# create a tibbble with a TEAM variable that has 5 teams from in the NCAA tournament and 5 not in it
-testy <- tibble(TEAM = c("Gonzaga", "Baylor", "Houston", "UCLA", "Duke", "Wyoming", "Rando", "Valparaiso", "UT Rio Grande Valley", "Tarleton St."),
-                NCAA_TOURNAMENT = c("Yes", "Yes", "Yes", "Yes", "Yes", "No", "No", "No", "No", "No"))
-
-testy |> filter(TEAM %in% tourney_teams)
-
 ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
