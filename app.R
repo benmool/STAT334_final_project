@@ -1,21 +1,21 @@
 library(tidytuesdayR)
 tuesdata <- tidytuesdayR::tt_load('2024-03-26')
-team_results <- tuesdata$'team-results'
 public_picks <- tuesdata$'public-picks'
 library(readr)
 cbb24 <- read_csv("cbb24.csv")
 library(tidyverse)
 library(shiny)
 
-# let's add a win percentage variable to cbb24
+## let's add a win percentage variable to cbb24
 cbb24 <- cbb24 |> mutate(win_perc = W / G * 100)
 
-# let's get all of the possible statistics choices we can look at from cbb24 (as a vector)
+## let's get all of the possible statistics choices we can look at from cbb24 (as a vector)
 rs_stat_choices <- names(cbb24)[c(4:21, 23:24)]
 
-pr_stats_choices <- names(team_results)[c(2:10)]
-
-pr_rounds <- names(team_results)[c(11:16)]
+## Let's convert the percentages to numeric in public picks
+public_picks[, c("R64", "R32", "S16", "E8", "F4", "FINALS")] <- 
+  lapply(public_picks[, c("R64", "R32", "S16", "E8", "F4", "FINALS")], 
+         function(x) as.numeric(sub("%", "", x)))
 
 all_teams <- cbb24 |> mutate(TEAM = as.factor(TEAM)) |>
   pull(TEAM) |> levels()
@@ -31,7 +31,7 @@ ui <- fluidPage(
       radioButtons(
         inputId = "data",
         label = "Choose a dataset to explore:",
-        choices = c("Full Regular Season Data", "Public Picks Data", "Past Team Results Data")
+        choices = c("Full Regular Season Data", "Public Picks Data")
       ),
       
       # For regular season data
@@ -137,71 +137,17 @@ ui <- fluidPage(
         ),
         actionButton(inputId = "pp_run_app", label = "Update Stats")
       ),
-      
-      # For past team results data
-      conditionalPanel(
-        condition = "input.data == 'Past Team Results Data'",
-        # select if we want to look at all teams or just tournament teams
-        radioButtons(
-          inputId = "pr_tourney_or_no",
-          label = "All NCAA teams or only NCAA 2024 tournament teams:",
-          choices = c("All D1 NCAA Teams", "NCAA 2024 Tournament Teams")
-        ),
-        radioButtons(
-          inputId = "pr_rounds_or_stats",
-          label = "Would you like to look at rounds or statistics?",
-          choices = c("Rounds", "Statistics")
-        ),
-        # if looking at rounds
-        conditionalPanel(
-          condition = "input.pr_rounds_or_stats == 'Rounds'",
-          checkboxGroupInput(
-            inputId = "pr_rounds",
-            label = "Choose round(s) to look at:",
-            choices = pr_rounds
-          ),
-          actionButton(inputId = "ptr_rounds_run_app", label = "Update Stats")
-        ),
-        # if looking at statistics
-        conditionalPanel(
-          condition = "input.pr_rounds_or_stats == 'Statistics'",
-          selectizeInput(
-            inputId = "pr_stats",
-            label = "Choose statistic(s) to look at:",
-            choices = pr_stats_choices,
-            multiple = TRUE
-          ),
-          selectInput(
-            inputId = "pr_stats_ordering",
-            label = "Order teams by:",
-            choices = NULL
-          ),
-          sliderInput(
-            inputId = "pr_stats_top_teams",
-            label = "How many top teams would you like to look at?",
-            min = 1,
-            max = 50,
-            value = 10
-          ),
-          actionButton(inputId = "ptr_stats_run_app", label = "Update Stats")
-        )
-      )
     ),
     mainPanel(
       conditionalPanel(
         condition = "input.data == 'Full Regular Season Data'",
-        dataTableOutput(outputId = "regular_season_table"),
-        plotOutput(outputId = "regular_season_plot")
+        plotOutput(outputId = "regular_season_plot"),
+        dataTableOutput(outputId = "regular_season_table")
       ),
       conditionalPanel(
         condition = "input.data == 'Public Picks Data'",
-        dataTableOutput(outputId = "public_picks_table"),
-        plotOutput(outputId = "public_picks_plot")
-      ),
-      conditionalPanel(
-        condition = "input.data == 'Past Team Results Data'",
-        dataTableOutput(outputId = "past_team_results_table"),
-        plotOutput(outputId = "past_team_results_plot")
+        plotOutput(outputId = "public_picks_plot"),
+        dataTableOutput(outputId = "public_picks_table")
       )
     )
   )
@@ -217,15 +163,18 @@ server <- function(input, output, session) {
     } else if (input$rs_tourney_or_no == "NCAA Tournament Teams") {
       teams_choices <- tourney_teams
     }
-    updateSelectizeInput(session, "ms_team_name_reg_season", choices = teams_choices)
+    updateSelectizeInput(session, "ms_team_name_reg_season", 
+                         choices = teams_choices)
   })
   
   observeEvent(input$ms_regular_season_stat, {
-    updateSelectInput(session, "ms_regular_season_ordering", choices = input$ms_regular_season_stat)
+    updateSelectInput(session, "ms_regular_season_ordering", 
+                      choices = input$ms_regular_season_stat)
   })
   
   observeEvent(input$nms_regular_season_stat, {
-    updateSelectInput(session, "nms_regular_season_ordering", choices = input$nms_regular_season_stat)
+    updateSelectInput(session, "nms_regular_season_ordering", 
+                      choices = input$nms_regular_season_stat)
   })
   
   rs_ms_react <- eventReactive(input$rs_ms_run_app, {
@@ -259,6 +208,7 @@ server <- function(input, output, session) {
     }
   })
   
+  ## regular season output tables
   output$regular_season_table <- renderDataTable({
     if (input$rs_manual_select == "No") {
       rs_nms_react()
@@ -267,18 +217,54 @@ server <- function(input, output, session) {
     }
   })
   
+  ## regular season output graphs
+  output$regular_season_plot <- renderPlot({
+    if (input$rs_manual_select == "No") {
+      rs_nms_plot <- rs_nms_react() |>
+        select(everything(), -CONF)
+      
+      pivot_longer(rs_nms_plot, cols = -TEAM, 
+                   names_to = "Variable", 
+                   values_to = "Value") |>
+        ggplot(aes(x = Variable, y = Value, fill = TEAM)) +
+        geom_bar(stat = "identity", position = "dodge") +
+        labs(x = "Variable", y = "Value",
+             title = "Performance Comparison of Top College Basketball Teams",
+             subtitle = "Data from 2023-2024 NCAA Basketball Regular Season") +
+        theme_minimal(base_size = 20) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+        scale_fill_viridis_d()
+    } else {
+      rs_ms_plot <- rs_ms_react() |>
+        select(everything(), -CONF)
+      
+      pivot_longer(rs_ms_plot, cols = -TEAM, 
+                   names_to = "Variable", 
+                   values_to = "Value") |>
+        ggplot(aes(x = Variable, y = Value, fill = TEAM)) +
+        geom_bar(stat = "identity", position = "dodge") +
+        labs(x = "Variable", y = "Value",
+             title = "Performance Comparison of Top College Basketball Teams",
+             subtitle = "Data from 2023-2024 NCAA Basketball Regular Season") +
+        theme_minimal(base_size = 20) +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+        scale_fill_viridis_d()
+    }
+  })
+  
   # public picks data
   observeEvent(input$public_picks_rds, {
-    updateSelectInput(session, "public_picks_ordered_by", choices = input$public_picks_rds)
+    updateSelectInput(session, "public_picks_ordered_by", 
+                      choices = input$public_picks_rds)
   })
   
   public_picks_react <- eventReactive(input$pp_run_app, {
-    if (input$public_picks_ordered_by == "Ascending") {
+    if (input$public_picks_ordering == "Ascending") {
       output_table <- public_picks |>
         select(TEAM, any_of(input$public_picks_rds)) |>
         filter(TEAM %in% input$public_picks_teams) |> 
         arrange(.data[[input$public_picks_ordered_by]])
-    } else if (input$public_picks_ordered_by == "Descending") {
+    } else if (input$public_picks_ordering == "Descending") {
       output_table <- public_picks |>
         select(TEAM, any_of(input$public_picks_rds)) |>
         filter(TEAM %in% input$public_picks_teams) |> 
@@ -286,14 +272,28 @@ server <- function(input, output, session) {
     }
   })
   
-  output$public_picks_table <- renderDataTable({
-    public_picks_react()
+  output$public_picks_plot <- renderPlot({
+    public_picks_top_teams_long <- pivot_longer(public_picks_react(),, 
+                                                cols = -TEAM, 
+                                                names_to = "Round", 
+                                                values_to = "Percentage")
+    
+    public_picks_top_teams_long$Round <- factor(
+      public_picks_top_teams_long$Round, 
+      levels = rounds_order)
+    
+    ggplot(public_picks_top_teams_long, 
+           aes(x = Round, y = Percentage, fill = TEAM)) +
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(x = "Round", y = "Percentage",
+           title = "Public Picks for 2024 NCAA Tournament Teams") +
+      theme_minimal(base_size = 20) +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+      scale_fill_viridis_d()
   })
   
-  
-  # past team results data
-  observeEvent(input$pr_stats, {
-    updateSelectInput(session, "pr_stats_ordering", choices = input$pr_stats)
+  output$public_picks_table <- renderDataTable({
+    public_picks_react()
   })
   
 }

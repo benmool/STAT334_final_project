@@ -5,37 +5,46 @@ format: html
 
 #### Introduction
 
-In this project, I am going to explore....
+We are going to look at two separate datasets in this project.
 
-
-We are going to look at two separate datasets in this project. The first is taken from Github's `tidytuesday` list of datasets, which is from Nishaan Amin's Kaggle dataset and analysis linked [here](https://www.kaggle.com/code/nishaanamin/bracketology-predicting-march-madness). The `tidytuesday` task specified two of Nishaan Amin's many datasets, and the link to the Github site can be found [here](https://github.com/rfordatascience/tidytuesday/blob/master/data/2024/2024-03-26/readme.md). These two dataframes contain data on past team results and the predictions the public has for this year's tournament (year 2024).
-
-I am also going to be using a "College Basketball Dataset" from Kaggle by Andrew Sundberg, which contains data from various seasons of Division 1 college basketball. Currently, the csv contains data from the 2023-2024 regular season without any data from the NCAA tournament. The link to the Kaggle dataset online can be found [here](https://www.kaggle.com/datasets/andrewsundberg/college-basketball-dataset?resource=download). Variables from this dataset include:
+The first is the "College Basketball Dataset" from Kaggle by Andrew Sundberg, which contains data from various seasons of Division 1 college basketball. At the time of this writing, the csv contains data from the 2023-2024 regular season without any data from the NCAA tournament this year. We are going to be using the `cbb24.csv` for our analysis, as it contains data on all Division 1 NCAA college basketball teams for the 2023-2024 regular season. The link to the Kaggle dataset can be found [here](https://www.kaggle.com/datasets/andrewsundberg/college-basketball-dataset?resource=download). Variables from this dataset are:
 
   * `RK`: The ranking of the team at the end of the regular season according to barttorvik
   * `TEAM`: The name of the team
   * `CONF`: The conference the team is in
   * `G`: The number of games the team played in the regular season
   * `W`: The number of wins the team had in the regular season
-  * `ADJOE` Adjusted offensive efficeincy (points scored per 100 possessions vs avg D1 defense)
-  * `ADJDE` Adjusted defensive efficiency (points allowed per 100 possessions vs avg D1 offense)
-  * `BARTHAG` Power rating from barttorvik (chance of beating avg D1 team)
-  * `EFG_O` Effective field goal percentage shot
-  * `EFG_D` Effective field goal percentage allowed
-  * `TOR` Turnover percentage allowed (turnovers per 100 plays)
-  * `TORD` Turnover percentage forced (turnovers per 100 plays)
-  * `ORB` Offensive rebound percentage 
-  * `DRB` Defensive rebound percentage
-  * `FTR` Free throw rate
-  * `FTRD` Free throw rate allowed
-  * `2P_O` Two point percentage shot
-  * `2P_D` Two point percentage allowed
-  * `3P_O` Three point percentage shot
-  * `3P_D` Three point percentage allowed
-  * `ADJ_T` Adjusted tempo (possessions per 40 minutes)
-  * `SEED` The seed the team was given in the 2024 NCAA tournament
+  * `ADJOE`: Adjusted offensive efficeincy (points scored per 100 possessions vs avg D1 defense)
+  * `ADJDE`: Adjusted defensive efficiency (points allowed per 100 possessions vs avg D1 offense)
+  * `BARTHAG`: Power rating from barttorvik (chance of beating avg D1 team)
+  * `EFG_O`: Effective field goal percentage shot
+  * `EFG_D`: Effective field goal percentage allowed
+  * `TOR`: Turnover percentage allowed (turnovers per 100 plays)
+  * `TORD`: Turnover percentage forced (turnovers per 100 plays)
+  * `ORB`: Offensive rebound percentage 
+  * `DRB`: Defensive rebound percentage
+  * `FTR`: Free throw rate
+  * `FTRD`: Free throw rate allowed
+  * `2P_O`: Two point percentage shot
+  * `2P_D`: Two point percentage allowed
+  * `3P_O`: Three point percentage shot
+  * `3P_D`: Three point percentage allowed
+  * `ADJ_T`: Adjusted tempo (possessions per 40 minutes)
+  * `SEED`: The seed the team was given in the 2024 NCAA tournament
+  
+Our second dataset is taken from Github's `tidytuesday`, and is from Nishaan Amin's Kaggle dataset and analysis linked [here](https://www.kaggle.com/code/nishaanamin/bracketology-predicting-march-madness). The `tidytuesday` task specified two of Nishaan Amin's many datasets, and the link to the Github site can be found [here](https://github.com/rfordatascience/tidytuesday/blob/master/data/2024/2024-03-26/readme.md). These two dataframes contain data on past team results and the predictions the public has for this year's tournament (year 2024). The datasets are titled `team-results` and `public-picks`. For this project, we will only be looking at the `public-picks` data. Variables from this dataset are:
 
-We are trying to answer the question of what makes a team successful in the regular season, and how that success translates to the NCAA tournament. We will be looking at various statistics from the regular season data to see if there are any trends that can be seen in the data. We will also be looking at the public picks data to see if there are any trends in the data that can be seen. Finally, we will be looking at past team results in the NCAA tournament to see if there are any trends in the data that can be seen.
+  * `YEAR`: The year of the NCAA tournament
+  * `TEAMNO`: The team number
+  * `TEAM`: The name of the team
+  * `R64`: The percentage of the public that picked the team win in the Round of 64
+  * `R32`: The percentage of the public that picked the team win in the Round of 32
+  * `S16`: The percentage of the public that picked the team win in the Sweet 16
+  * `E8`: The percentage of the public that picked the team win in the Elite 8
+  * `F4`: The percentage of the public that picked the team win in the Final Four
+  * `FINALS`: The percentage of the public that picked the team win in the Finals
+  
+We are trying to answer the question of what makes a team successful in the regular season, and how that success translates to the NCAA tournament. We look at various statistics from the regular season data to see if there are any trends that can be seen in the data. We also look at the public picks data to see if there are any trends in the data that can be seen. We can see if there are any specific statistics or groupings of statistics that the public tends to pick more often than others.
 
 #### Data Exploration
 
@@ -371,6 +380,15 @@ regular_season_reactive <- reactive({
       }
     }
   })
+```
+
+
+```{r}
+
+
+output_table <- public_picks |>
+        select(TEAM, any_of(input$public_picks_rds)) |>
+        filter(TEAM %in% input$public_picks_teams)
 ```
 
   

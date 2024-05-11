@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.553">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Ben Moolman">
+<meta name="dcterms.date" content="2024-05-11">
+
+<title>STAT334 Final Project</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="Final_Project_Report_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Final_Project_Report_files/libs/quarto-html/quarto.js"></script>
+<script src="Final_Project_Report_files/libs/quarto-html/popper.min.js"></script>
+<script src="Final_Project_Report_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Final_Project_Report_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Final_Project_Report_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Final_Project_Report_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Final_Project_Report_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Final_Project_Report_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Final_Project_Report_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="Final_Project_Report_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="Final_Project_Report_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">STAT334 Final Project</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Ben Moolman </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 11, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="abstract" class="level2">
+<h2 class="anchored" data-anchor-id="abstract">Abstract</h2>
+<p>In this project, we aim to explore NCAA basketball teams and their results from the 2023-2024 season. We use data that has various statistics from the 2023-2024 NCAA basketball regular season. We also use data that has predictions made by the public as to how each team will do in the 2024 NCAA tournament. Our goal is to combine these data sets into a shiny app and offer tables and visuals to explore how teams have performed this last season, and how the public thought they would perform in the 2023-2024 NCAA tournament. The code for the shiny app is in the <code>app.R</code> file in this repository.</p>
+</section>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<section id="data" class="level3">
+<h3 class="anchored" data-anchor-id="data">Data</h3>
+<p>We are going to look at two separate datasets in this project.</p>
+<p>The first is the “College Basketball Dataset” from Kaggle by Andrew Sundberg, which contains data from various seasons of Division 1 college basketball. At the time of this writing, the csv contains data from the 2023-2024 regular season without any data from the NCAA tournament this year. We are going to be using the <code>cbb24.csv</code> for our analysis, as it contains data on all Division 1 NCAA college basketball teams for the 2023-2024 regular season. The link to the Kaggle dataset can be found <a href="https://www.kaggle.com/datasets/andrewsundberg/college-basketball-dataset?resource=download">here</a>. Variables from this dataset are:</p>
+<ul>
+<li><code>RK</code>: The ranking of the team at the end of the regular season according to barttorvik</li>
+<li><code>TEAM</code>: The name of the team</li>
+<li><code>CONF</code>: The conference the team is in</li>
+<li><code>G</code>: The number of games the team played in the regular season</li>
+<li><code>W</code>: The number of wins the team had in the regular season</li>
+<li><code>ADJOE</code>: Adjusted offensive efficeincy (points scored per 100 possessions vs avg D1 defense)</li>
+<li><code>ADJDE</code>: Adjusted defensive efficiency (points allowed per 100 possessions vs avg D1 offense)</li>
+<li><code>BARTHAG</code>: Power rating from barttorvik (chance of beating avg D1 team)</li>
+<li><code>EFG_O</code>: Effective field goal percentage shot</li>
+<li><code>EFG_D</code>: Effective field goal percentage allowed</li>
+<li><code>TOR</code>: Turnover percentage allowed (turnovers per 100 plays)</li>
+<li><code>TORD</code>: Turnover percentage forced (turnovers per 100 plays)</li>
+<li><code>ORB</code>: Offensive rebound percentage</li>
+<li><code>DRB</code>: Defensive rebound percentage</li>
+<li><code>FTR</code>: Free throw rate</li>
+<li><code>FTRD</code>: Free throw rate allowed</li>
+<li><code>2P_O</code>: Two point percentage shot</li>
+<li><code>2P_D</code>: Two point percentage allowed</li>
+<li><code>3P_O</code>: Three point percentage shot</li>
+<li><code>3P_D</code>: Three point percentage allowed</li>
+<li><code>ADJ_T</code>: Adjusted tempo (possessions per 40 minutes)</li>
+<li><code>SEED</code>: The seed the team was given in the 2024 NCAA tournament</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load in data</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>cbb24 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"cbb24.csv"</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># let's add a win percentage variable to cbb24</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>cbb24 <span class="ot">&lt;-</span> cbb24 <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">win_perc =</span> W <span class="sc">/</span> G <span class="sc">*</span> <span class="dv">100</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s look at what the four 1 seeds in the tournament’s rows look like in the <code>cbb24</code> dataset.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<table class="table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">RK</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">TEAM</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">CONF</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">G</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">W</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">ADJOE</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">ADJDE</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">BARTHAG</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">EFG%</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">EFGD%</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">TOR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">TORD</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">ORB</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">Houston</td>
+<td style="text-align: left;">B12</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">119.2</td>
+<td style="text-align: right;">85.5</td>
+<td style="text-align: right;">0.9785</td>
+<td style="text-align: right;">49.7</td>
+<td style="text-align: right;">44.0</td>
+<td style="text-align: right;">13.7</td>
+<td style="text-align: right;">24.7</td>
+<td style="text-align: right;">36.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Connecticut</td>
+<td style="text-align: left;">BE</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">31</td>
+<td style="text-align: right;">127.1</td>
+<td style="text-align: right;">93.6</td>
+<td style="text-align: right;">0.9712</td>
+<td style="text-align: right;">57.1</td>
+<td style="text-align: right;">45.1</td>
+<td style="text-align: right;">14.9</td>
+<td style="text-align: right;">16.2</td>
+<td style="text-align: right;">36.5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Purdue</td>
+<td style="text-align: left;">B10</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">126.2</td>
+<td style="text-align: right;">94.7</td>
+<td style="text-align: right;">0.9644</td>
+<td style="text-align: right;">56.0</td>
+<td style="text-align: right;">47.7</td>
+<td style="text-align: right;">16.5</td>
+<td style="text-align: right;">14.0</td>
+<td style="text-align: right;">37.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">North Carolina</td>
+<td style="text-align: left;">ACC</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">116.8</td>
+<td style="text-align: right;">93.2</td>
+<td style="text-align: right;">0.9305</td>
+<td style="text-align: right;">51.3</td>
+<td style="text-align: right;">46.4</td>
+<td style="text-align: right;">14.4</td>
+<td style="text-align: right;">14.9</td>
+<td style="text-align: right;">32.8</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<table class="table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">DRB</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">FTR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">FTRD</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">2P_O</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">2P_D</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">3P_O</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">3P_D</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">ADJ_T</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">WAB</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">SEED</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">win_perc</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">30.2</td>
+<td style="text-align: right;">29.9</td>
+<td style="text-align: right;">39.0</td>
+<td style="text-align: right;">48.4</td>
+<td style="text-align: right;">43.4</td>
+<td style="text-align: right;">34.7</td>
+<td style="text-align: right;">30.0</td>
+<td style="text-align: right;">63.3</td>
+<td style="text-align: right;">10.6</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">88.23529</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">26.8</td>
+<td style="text-align: right;">33.3</td>
+<td style="text-align: right;">32.5</td>
+<td style="text-align: right;">58.5</td>
+<td style="text-align: right;">43.7</td>
+<td style="text-align: right;">36.7</td>
+<td style="text-align: right;">31.9</td>
+<td style="text-align: right;">64.6</td>
+<td style="text-align: right;">11.3</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">91.17647</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">24.7</td>
+<td style="text-align: right;">42.8</td>
+<td style="text-align: right;">23.0</td>
+<td style="text-align: right;">53.2</td>
+<td style="text-align: right;">48.1</td>
+<td style="text-align: right;">40.8</td>
+<td style="text-align: right;">31.4</td>
+<td style="text-align: right;">67.6</td>
+<td style="text-align: right;">11.0</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">87.87879</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">23.5</td>
+<td style="text-align: right;">36.8</td>
+<td style="text-align: right;">28.3</td>
+<td style="text-align: right;">50.3</td>
+<td style="text-align: right;">46.0</td>
+<td style="text-align: right;">35.4</td>
+<td style="text-align: right;">31.4</td>
+<td style="text-align: right;">70.4</td>
+<td style="text-align: right;">6.6</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">79.41176</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
+<p>Our second dataset is taken from Github’s <code>tidytuesday</code>, and is from Nishaan Amin’s Kaggle dataset and analysis linked <a href="https://www.kaggle.com/code/nishaanamin/bracketology-predicting-march-madness">here</a>. The <code>tidytuesday</code> task specified two of Nishaan Amin’s many datasets, and the link to the Github site can be found <a href="https://github.com/rfordatascience/tidytuesday/blob/master/data/2024/2024-03-26/readme.md">here</a>. These two dataframes contain data on past team results and the predictions the public has for this year’s tournament (year 2024). The datasets are titled <code>team-results</code> and <code>public-picks</code>. For this project, we will only be looking at the <code>public-picks</code> data. Variables from this dataset are:</p>
+<ul>
+<li><code>YEAR</code>: The year of the NCAA tournament</li>
+<li><code>TEAMNO</code>: The team number</li>
+<li><code>TEAM</code>: The name of the team</li>
+<li><code>R64</code>: The percentage of the public that picked the team win in the Round of 64</li>
+<li><code>R32</code>: The percentage of the public that picked the team win in the Round of 32</li>
+<li><code>S16</code>: The percentage of the public that picked the team win in the Sweet 16</li>
+<li><code>E8</code>: The percentage of the public that picked the team win in the Elite 8</li>
+<li><code>F4</code>: The percentage of the public that picked the team win in the Final Four</li>
+<li><code>FINALS</code>: The percentage of the public that picked the team win in the Finals</li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load in data</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidytuesdayR)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>tuesdata <span class="ot">&lt;-</span> tidytuesdayR<span class="sc">::</span><span class="fu">tt_load</span>(<span class="st">'2024-03-26'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Downloading file 1 of 2: `team-results.csv`
+    Downloading file 2 of 2: `public-picks.csv`</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>public_picks <span class="ot">&lt;-</span> tuesdata<span class="sc">$</span><span class="st">'public-picks'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s look at the rows of the <code>public_picks</code> dataset that contain the four 1 seeds in the tournament.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<table class="table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: right;" data-quarto-table-cell-role="th">YEAR</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">TEAMNO</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">TEAM</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">R64</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">R32</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">S16</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">E8</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">F4</th>
+<th style="text-align: left;" data-quarto-table-cell-role="th">FINALS</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2024</td>
+<td style="text-align: right;">1067</td>
+<td style="text-align: left;">Connecticut</td>
+<td style="text-align: left;">98.41%</td>
+<td style="text-align: left;">93.59%</td>
+<td style="text-align: left;">80.22%</td>
+<td style="text-align: left;">66.20%</td>
+<td style="text-align: left;">50.27%</td>
+<td style="text-align: left;">34.92%</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2024</td>
+<td style="text-align: right;">1056</td>
+<td style="text-align: left;">Houston</td>
+<td style="text-align: left;">97.01%</td>
+<td style="text-align: left;">85.69%</td>
+<td style="text-align: left;">63.77%</td>
+<td style="text-align: left;">42.54%</td>
+<td style="text-align: left;">16.15%</td>
+<td style="text-align: left;">9.27%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2024</td>
+<td style="text-align: right;">1038</td>
+<td style="text-align: left;">North Carolina</td>
+<td style="text-align: left;">97.55%</td>
+<td style="text-align: left;">88.07%</td>
+<td style="text-align: left;">71.16%</td>
+<td style="text-align: left;">45.40%</td>
+<td style="text-align: left;">29.98%</td>
+<td style="text-align: left;">12.10%</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2024</td>
+<td style="text-align: right;">1033</td>
+<td style="text-align: left;">Purdue</td>
+<td style="text-align: left;">97.08%</td>
+<td style="text-align: left;">86.21%</td>
+<td style="text-align: left;">66.25%</td>
+<td style="text-align: left;">44.36%</td>
+<td style="text-align: left;">21.64%</td>
+<td style="text-align: left;">10.22%</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
+</section>
+<section id="goals" class="level3">
+<h3 class="anchored" data-anchor-id="goals">Goals</h3>
+<p>Our goal is to create a shiny app that allow users to explore the data from the 2023-2024 NCAA basketball season. We offer tables and visuals that allow users to see how teams performed in the regular season, and how the public thought they would perform in the 2024 NCAA tournament.</p>
+<p>We are trying to answer the question of what can guide a team to having a successful regular season, and how that success translates to the NCAA tournament. We look at various statistics from the regular season data to see if there are any trends that can be seen in the data. We also look at the public picks data to see if there are any trends in the data that can be seen. We can see if there are any specific statistics or groupings of statistics that the public tends to pick more often than others.</p>
+</section>
+</section>
+<section id="visualizations" class="level2">
+<h2 class="anchored" data-anchor-id="visualizations">Visualizations</h2>
+<p>First, we do some cleaning of the data to make it easier to work with. We are going to be looking at the tables and graphs generated in the shiny app. The code below generating all visualizations is static and will not be run in the shiny app. It is only here to show the visualizations that will be in the shiny app.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="do">## let's add a win percentage variable to cbb24</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>cbb24 <span class="ot">&lt;-</span> cbb24 <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">win_perc =</span> W <span class="sc">/</span> G <span class="sc">*</span> <span class="dv">100</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="do">## Let's convert the percentages to numeric in public picks</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>public_picks[, <span class="fu">c</span>(<span class="st">"R64"</span>, <span class="st">"R32"</span>, <span class="st">"S16"</span>, <span class="st">"E8"</span>, <span class="st">"F4"</span>, <span class="st">"FINALS"</span>)] <span class="ot">&lt;-</span> </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">lapply</span>(public_picks[, <span class="fu">c</span>(<span class="st">"R64"</span>, <span class="st">"R32"</span>, <span class="st">"S16"</span>, <span class="st">"E8"</span>, <span class="st">"F4"</span>, <span class="st">"FINALS"</span>)], </span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>         <span class="cf">function</span>(x) <span class="fu">as.numeric</span>(<span class="fu">sub</span>(<span class="st">"%"</span>, <span class="st">""</span>, x)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="regular-season-statistics-plot" class="level3">
+<h3 class="anchored" data-anchor-id="regular-season-statistics-plot">Regular Season Statistics Plot</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="do">## Visualization 1: cbb24 filtered for specific teams and specific stats</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>cbb24_top_teams <span class="ot">&lt;-</span> cbb24 <span class="sc">|&gt;</span> </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(TEAM <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Houston"</span>, <span class="st">"Connecticut"</span>, <span class="st">"Purdue"</span>, <span class="st">"North Carolina"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(TEAM, win_perc, <span class="st">'2P_O'</span>, <span class="st">'2P_D'</span>, <span class="st">'3P_O'</span>, <span class="st">'3P_D'</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>cbb24_top_teams_long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(cbb24_top_teams, </span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">cols =</span> <span class="sc">-</span>TEAM, </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">names_to =</span> <span class="st">"Variable"</span>, </span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">values_to =</span> <span class="st">"Value"</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(cbb24_top_teams_long, <span class="fu">aes</span>(<span class="at">x =</span> Variable, <span class="at">y =</span> Value, <span class="at">fill =</span> TEAM)) <span class="sc">+</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Variable"</span>, <span class="at">y =</span> <span class="st">"Value"</span>,</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Performance Comparison of Top College Basketball Teams"</span>,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Data from 2023-2024 NCAA Basketball Regular Season"</span>) <span class="sc">+</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">20</span>) <span class="sc">+</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_viridis_d</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final_Project_Report_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This visual shows the performance of college basketball teams in the 2023-2024 regular season. We have selected the 4 teams that have been given the 1 seed in the tournament, Houston, Connecticut, Purdue, and North Carolina. We can see how these 4 teams compare in various statistics. Statistics we have chosen here are 2-point field goal percentage allowed (<code>2P_D</code>), offensive 2-point field goal percentage (<code>2P_O</code>), 3-point field goal percentage allowed (<code>3P_D</code>), offensive 3-point field goal percentage (<code>3P_O</code>), and win percentage (<code>win_perc</code>). The shiny app allows users to change what teams and statistics they want to see in this visual.</p>
+</section>
+<section id="regular-season-statistics-table" class="level3">
+<h3 class="anchored" data-anchor-id="regular-season-statistics-table">Regular Season Statistics Table</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>cbb24_top_teams <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(win_perc)) <span class="sc">|&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">font_size =</span> <span class="dv">23</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<table class="table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">TEAM</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">win_perc</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">2P_O</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">2P_D</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">3P_O</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">3P_D</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Connecticut</td>
+<td style="text-align: right;">91.17647</td>
+<td style="text-align: right;">58.5</td>
+<td style="text-align: right;">43.7</td>
+<td style="text-align: right;">36.7</td>
+<td style="text-align: right;">31.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Houston</td>
+<td style="text-align: right;">88.23529</td>
+<td style="text-align: right;">48.4</td>
+<td style="text-align: right;">43.4</td>
+<td style="text-align: right;">34.7</td>
+<td style="text-align: right;">30.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Purdue</td>
+<td style="text-align: right;">87.87879</td>
+<td style="text-align: right;">53.2</td>
+<td style="text-align: right;">48.1</td>
+<td style="text-align: right;">40.8</td>
+<td style="text-align: right;">31.4</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">North Carolina</td>
+<td style="text-align: right;">79.41176</td>
+<td style="text-align: right;">50.3</td>
+<td style="text-align: right;">46.0</td>
+<td style="text-align: right;">35.4</td>
+<td style="text-align: right;">31.4</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
+<p>The table shows the performance of college basketball teams in the 2023-2024 regular season. This table accompanies the graph above, and provides numerical values for the statistics shown in the graph.</p>
+</section>
+<section id="public-picks-plot" class="level3">
+<h3 class="anchored" data-anchor-id="public-picks-plot">Public Picks Plot</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>rounds_order <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"R64"</span>, <span class="st">"R32"</span>, <span class="st">"S16"</span>, <span class="st">"E8"</span>, <span class="st">"F4"</span>, <span class="st">"FINALS"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>public_picks_top_teams <span class="ot">&lt;-</span> public_picks <span class="sc">|&gt;</span> </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(TEAM <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Houston"</span>, <span class="st">"Connecticut"</span>, <span class="st">"Purdue"</span>, <span class="st">"North Carolina"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(TEAM, S16, E8, F4, FINALS)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>public_picks_top_teams_long <span class="ot">&lt;-</span> <span class="fu">pivot_longer</span>(public_picks_top_teams, </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">cols =</span> <span class="sc">-</span>TEAM, </span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">names_to =</span> <span class="st">"Round"</span>, </span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>                                     <span class="at">values_to =</span> <span class="st">"Percentage"</span>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>public_picks_top_teams_long<span class="sc">$</span>Round <span class="ot">&lt;-</span> <span class="fu">factor</span>(public_picks_top_teams_long<span class="sc">$</span>Round, </span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>                                            <span class="at">levels =</span> rounds_order)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(public_picks_top_teams_long, </span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>       <span class="fu">aes</span>(<span class="at">x =</span> Round, <span class="at">y =</span> Percentage, <span class="at">fill =</span> TEAM)) <span class="sc">+</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bar</span>(<span class="at">stat =</span> <span class="st">"identity"</span>, <span class="at">position =</span> <span class="st">"dodge"</span>) <span class="sc">+</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Round"</span>, <span class="at">y =</span> <span class="st">"Percentage"</span>,</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"Public Picks for 2024 NCAA Tournament Teams"</span>) <span class="sc">+</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">20</span>) <span class="sc">+</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_viridis_d</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="Final_Project_Report_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This visual shows the public picks for the 2024 NCAA tournament. Users of the shiny app can see how the public thinks different teams will perform in the tournament. Again, we have selected the 4 teams that have been given the 1 seed in the tournament, Houston, Connecticut, Purdue, and North Carolina, and can explore the public picks. The shiny app allows users to change what teams they want to see in this visual, by modifying the teams selected and what rounds they want to see.</p>
+</section>
+<section id="public-picks-table" class="level3">
+<h3 class="anchored" data-anchor-id="public-picks-table">Public Picks Table</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>public_picks_top_teams <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(FINALS)) <span class="sc">|&gt;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">|&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                <span class="at">font_size =</span> <span class="dv">23</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<table class="table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">TEAM</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">S16</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">E8</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">F4</th>
+<th style="text-align: right;" data-quarto-table-cell-role="th">FINALS</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Connecticut</td>
+<td style="text-align: right;">80.22</td>
+<td style="text-align: right;">66.20</td>
+<td style="text-align: right;">50.27</td>
+<td style="text-align: right;">34.92</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">North Carolina</td>
+<td style="text-align: right;">71.16</td>
+<td style="text-align: right;">45.40</td>
+<td style="text-align: right;">29.98</td>
+<td style="text-align: right;">12.10</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Purdue</td>
+<td style="text-align: right;">66.25</td>
+<td style="text-align: right;">44.36</td>
+<td style="text-align: right;">21.64</td>
+<td style="text-align: right;">10.22</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Houston</td>
+<td style="text-align: right;">63.77</td>
+<td style="text-align: right;">42.54</td>
+<td style="text-align: right;">16.15</td>
+<td style="text-align: right;">9.27</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+</div>
+<p>The table shows the public picks for the 2024 NCAA tournament. This table accompanies the graph above, and provides numerical values for the percentages shown in the graph.</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>In conclusion, we have built a shiny app that allows users to explore the data from the 2023-2024 NCAA basketball season. We have provided tables and visuals that allow users to see how teams performed in the regular season, and how the public thought they would perform in the 2024 NCAA tournament. We can look at various statistics from the regular season data to see if there are any trends that can be seen in the data. We can also looked at the public picks data to see if there are any trends in the data that can be seen. We can see if there are any specific statistics or groupings of statistics that the public tends to pick more often than others.</p>
+<p>We hope that this shiny app will be useful for anyone interested in exploring the data from the 2023-2024 NCAA basketball season, and can be easily adapted to explore other seasons of NCAA basketball.</p>
+<p>If given more time, we would like to add more features to the shiny app. We would like to add another section of exploring data using the second <code>tidytuesday</code> dataset, <code>team-results</code>, that includes data on previous years of March Madness Tournament Data. We would like to add more visuals and tables that allow users to explore this data. And now that the tournament has completed, it would be interesting to see how the public picks compared to the actual results of the tournament.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

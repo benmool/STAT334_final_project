@@ -1,0 +1,216 @@
+---
+title: "STAT334 Final Project"
+author: "Ben Moolman"
+date: "2024-05-11"
+output: html_document
+---
+
+## Abstract
+
+In this project, we aim to explore NCAA basketball teams and their results from the 2023-2024 season. We use data that has various statistics from the 2023-2024 NCAA basketball regular season. We also use data that has predictions made by the public as to how each team will do in the 2024 NCAA tournament. Our goal is to combine these data sets into a shiny app and offer tables and visuals to explore how teams have performed this last season, and how the public thought they would perform in the 2023-2024 NCAA tournament. The code for the shiny app is in the `app.R` file in this repository.
+
+## Introduction
+
+### Data
+
+We are going to look at two separate datasets in this project.
+
+The first is the "College Basketball Dataset" from Kaggle by Andrew Sundberg, which contains data from various seasons of Division 1 college basketball. At the time of this writing, the csv contains data from the 2023-2024 regular season without any data from the NCAA tournament this year. We are going to be using the `cbb24.csv` for our analysis, as it contains data on all Division 1 NCAA college basketball teams for the 2023-2024 regular season. The link to the Kaggle dataset can be found [here](https://www.kaggle.com/datasets/andrewsundberg/college-basketball-dataset?resource=download). Variables from this dataset are:
+
+  * `RK`: The ranking of the team at the end of the regular season according to barttorvik
+  * `TEAM`: The name of the team
+  * `CONF`: The conference the team is in
+  * `G`: The number of games the team played in the regular season
+  * `W`: The number of wins the team had in the regular season
+  * `ADJOE`: Adjusted offensive efficeincy (points scored per 100 possessions vs avg D1 defense)
+  * `ADJDE`: Adjusted defensive efficiency (points allowed per 100 possessions vs avg D1 offense)
+  * `BARTHAG`: Power rating from barttorvik (chance of beating avg D1 team)
+  * `EFG_O`: Effective field goal percentage shot
+  * `EFG_D`: Effective field goal percentage allowed
+  * `TOR`: Turnover percentage allowed (turnovers per 100 plays)
+  * `TORD`: Turnover percentage forced (turnovers per 100 plays)
+  * `ORB`: Offensive rebound percentage 
+  * `DRB`: Defensive rebound percentage
+  * `FTR`: Free throw rate
+  * `FTRD`: Free throw rate allowed
+  * `2P_O`: Two point percentage shot
+  * `2P_D`: Two point percentage allowed
+  * `3P_O`: Three point percentage shot
+  * `3P_D`: Three point percentage allowed
+  * `ADJ_T`: Adjusted tempo (possessions per 40 minutes)
+  * `SEED`: The seed the team was given in the 2024 NCAA tournament
+  
+```{r}
+#| message: false
+#| warning: false
+# load in data
+library(readr)
+cbb24 <- read_csv("cbb24.csv")
+library(tidyverse)
+# let's add a win percentage variable to cbb24
+cbb24 <- cbb24 |> mutate(win_perc = W / G * 100)
+```
+
+Let's look at what the four 1 seeds in the tournament's rows look like in the `cbb24` dataset.
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+library(kableExtra)
+cbb24_top_seeds <- cbb24 |> 
+  filter(TEAM %in% c("Houston", "Connecticut", "Purdue", "North Carolina"))
+
+cbb24_top_seeds[1:13] |>
+  kable() |>
+  kable_styling(full_width = FALSE,
+                font_size = 23)
+
+cbb24_top_seeds[14:24] |>
+  kable() |>
+  kable_styling(full_width = FALSE,
+                font_size = 23)
+```
+
+  
+Our second dataset is taken from Github's `tidytuesday`, and is from Nishaan Amin's Kaggle dataset and analysis linked [here](https://www.kaggle.com/code/nishaanamin/bracketology-predicting-march-madness). The `tidytuesday` task specified two of Nishaan Amin's many datasets, and the link to the Github site can be found [here](https://github.com/rfordatascience/tidytuesday/blob/master/data/2024/2024-03-26/readme.md). These two dataframes contain data on past team results and the predictions the public has for this year's tournament (year 2024). The datasets are titled `team-results` and `public-picks`. For this project, we will only be looking at the `public-picks` data. Variables from this dataset are:
+
+  * `YEAR`: The year of the NCAA tournament
+  * `TEAMNO`: The team number
+  * `TEAM`: The name of the team
+  * `R64`: The percentage of the public that picked the team win in the Round of 64
+  * `R32`: The percentage of the public that picked the team win in the Round of 32
+  * `S16`: The percentage of the public that picked the team win in the Sweet 16
+  * `E8`: The percentage of the public that picked the team win in the Elite 8
+  * `F4`: The percentage of the public that picked the team win in the Final Four
+  * `FINALS`: The percentage of the public that picked the team win in the Finals
+  
+```{r}
+#| message: false
+#| warning: false
+# load in data
+library(tidytuesdayR)
+tuesdata <- tidytuesdayR::tt_load('2024-03-26')
+public_picks <- tuesdata$'public-picks'
+```
+
+Let's look at the rows of the `public_picks` dataset that contain the four 1 seeds in the tournament.
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+public_picks |> filter(TEAM %in% c("Houston", "Connecticut", "Purdue", "North Carolina")) |>
+  kable() |>
+  kable_styling(full_width = FALSE,
+                font_size = 25)
+```
+  
+### Goals
+
+Our goal is to create a shiny app that allow users to explore the data from the 2023-2024 NCAA basketball season. We offer tables and visuals that allow users to see how teams performed in the regular season, and how the public thought they would perform in the 2024 NCAA tournament. 
+
+We are trying to answer the question of what can guide a team to having a successful regular season, and how that success translates to the NCAA tournament. We look at various statistics from the regular season data to see if there are any trends that can be seen in the data. We also look at the public picks data to see if there are any trends in the data that can be seen. We can see if there are any specific statistics or groupings of statistics that the public tends to pick more often than others.
+
+## Visualizations
+
+First, we do some cleaning of the data to make it easier to work with. We are going to be looking at the tables and graphs generated in the shiny app. The code below generating all visualizations is static and will not be run in the shiny app. It is only here to show the visualizations that will be in the shiny app.
+```{r}
+library(tidyverse)
+library(shiny)
+
+## let's add a win percentage variable to cbb24
+cbb24 <- cbb24 |> mutate(win_perc = W / G * 100)
+
+## Let's convert the percentages to numeric in public picks
+public_picks[, c("R64", "R32", "S16", "E8", "F4", "FINALS")] <- 
+  lapply(public_picks[, c("R64", "R32", "S16", "E8", "F4", "FINALS")], 
+         function(x) as.numeric(sub("%", "", x)))
+```
+
+### Regular Season Statistics Plot
+
+```{r}
+## Visualization 1: cbb24 filtered for specific teams and specific stats
+cbb24_top_teams <- cbb24 |> 
+  filter(TEAM %in% c("Houston", "Connecticut", "Purdue", "North Carolina")) |>
+  select(TEAM, win_perc, '2P_O', '2P_D', '3P_O', '3P_D')
+
+cbb24_top_teams_long <- pivot_longer(cbb24_top_teams, 
+                                     cols = -TEAM, 
+                                     names_to = "Variable", 
+                                     values_to = "Value")
+
+ggplot(cbb24_top_teams_long, aes(x = Variable, y = Value, fill = TEAM)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Variable", y = "Value",
+       title = "Performance Comparison of Top College Basketball Teams",
+       subtitle = "Data from 2023-2024 NCAA Basketball Regular Season") +
+  theme_minimal(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_viridis_d()
+```
+
+This visual shows the performance of college basketball teams in the 2023-2024 regular season. We have selected the 4 teams that have been given the 1 seed in the tournament, Houston, Connecticut, Purdue, and North Carolina. We can see how these 4 teams compare in various statistics. Statistics we have chosen here are 2-point field goal percentage allowed (`2P_D`), offensive 2-point field goal percentage (`2P_O`), 3-point field goal percentage allowed (`3P_D`), offensive 3-point field goal percentage (`3P_O`), and win percentage (`win_perc`). The shiny app allows users to change what teams and statistics they want to see in this visual.
+
+### Regular Season Statistics Table
+
+```{r}
+cbb24_top_teams |>
+  arrange(desc(win_perc)) |>
+  kable() |>
+  kable_styling(full_width = FALSE,
+                font_size = 23)
+```
+
+The table shows the performance of college basketball teams in the 2023-2024 regular season. This table accompanies the graph above, and provides numerical values for the statistics shown in the graph.
+
+### Public Picks Plot
+
+```{r}
+#| echo: true
+#| message: false
+#| warning: false
+rounds_order <- c("R64", "R32", "S16", "E8", "F4", "FINALS")
+
+public_picks_top_teams <- public_picks |> 
+  filter(TEAM %in% c("Houston", "Connecticut", "Purdue", "North Carolina")) |>
+  select(TEAM, S16, E8, F4, FINALS)
+
+public_picks_top_teams_long <- pivot_longer(public_picks_top_teams, 
+                                     cols = -TEAM, 
+                                     names_to = "Round", 
+                                     values_to = "Percentage")
+
+public_picks_top_teams_long$Round <- factor(public_picks_top_teams_long$Round, 
+                                            levels = rounds_order)
+
+ggplot(public_picks_top_teams_long, 
+       aes(x = Round, y = Percentage, fill = TEAM)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Round", y = "Percentage",
+       title = "Public Picks for 2024 NCAA Tournament Teams") +
+  theme_minimal(base_size = 20) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_viridis_d()
+```
+
+This visual shows the public picks for the 2024 NCAA tournament. Users of the shiny app can see how the public thinks different teams will perform in the tournament. Again, we have selected the 4 teams that have been given the 1 seed in the tournament, Houston, Connecticut, Purdue, and North Carolina, and can explore the public picks. The shiny app allows users to change what teams they want to see in this visual, by modifying the teams selected and what rounds they want to see.
+
+### Public Picks Table
+
+```{r}
+public_picks_top_teams |>
+  arrange(desc(FINALS)) |>
+  kable() |>
+  kable_styling(full_width = FALSE,
+                font_size = 23)
+```
+
+The table shows the public picks for the 2024 NCAA tournament. This table accompanies the graph above, and provides numerical values for the percentages shown in the graph.
+
+## Conclusion
+
+In conclusion, we have built a shiny app that allows users to explore the data from the 2023-2024 NCAA basketball season. We have provided tables and visuals that allow users to see how teams performed in the regular season, and how the public thought they would perform in the 2024 NCAA tournament. We can look at various statistics from the regular season data to see if there are any trends that can be seen in the data. We can also looked at the public picks data to see if there are any trends in the data that can be seen. We can see if there are any specific statistics or groupings of statistics that the public tends to pick more often than others.
+
+We hope that this shiny app will be useful for anyone interested in exploring the data from the 2023-2024 NCAA basketball season, and can be easily adapted to explore other seasons of NCAA basketball.
+
+If given more time, we would like to add more features to the shiny app. We would like to add another section of exploring data using the second `tidytuesday` dataset, `team-results`, that includes data on previous years of March Madness Tournament Data. We would like to add more visuals and tables that allow users to explore this data. And now that the tournament has completed, it would be interesting to see how the public picks compared to the actual results of the tournament.

@@ -1,1 +1,5 @@
 # STAT334_final_project
+
+This repository contains the work for my final project of STAT 334 Data Visualizations at St. Lawrence University. In this project, we aim to explore NCAA basketball teams and their results from the 2023-2024 season. We use data that has various statistics from the 2023-2024 NCAA basketball regular season. We also use data that has predictions made by the public as to how each team will do in the 2024 NCAA tournament. Our goal is to combine these data sets into a shiny app and offer tables and visuals to explore how teams have performed this last season, and how the public thought they would perform in the 2023-2024 NCAA tournament.
+
+A detailed write up of the project can be found in the `Final_Project_Report.html` file, and the shiny app can be found in the `app.R` file.
